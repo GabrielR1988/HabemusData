@@ -1,0 +1,59 @@
+/* Ajustes generales */
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* Encabezados principales */
+h1, h2, h3 {
+  font-weight: bold;
+}
+
+/* Formularios */
+form label {
+  display: block;
+  margin-top: 10px;
+}
+
+form input[type="text"],
+form input[type="password"],
+form input[type="email"],
+form textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+form button[type="submit"] {
+  margin-top: 15px;
+}
+
+/* Mensajes flash */
+.alert {
+  margin-top: 10px;
+}
+
+/* Navbar brand */
+.navbar-brand {
+  font-weight: bold;
+}
+
+/* Links en el navbar */
+.navbar-nav .nav-link {
+  color: #ddd !important;
+}
+
+/* Links activos */
+.navbar-nav .nav-link.active {
+  color: #fff !important;
+  font-weight: bold;
+}
+
+/* Footer (opcional si querés agregarlo) */
+footer {
+  text-align: center;
+  margin-top: 30px;
+  padding: 10px;
+  background: #f8f9fa;
+}

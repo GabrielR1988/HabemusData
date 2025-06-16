@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+  <h2 class="mb-4">Iniciar sesión</h2>
+
+  <!-- Mostramos los mensajes flash si existen -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" class="mb-3">
+    <div class="mb-3">
+      <label for="username" class="form-label">Usuario</label>
+      <input type="text" class="form-control" id="username" name="username" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Contraseña</label>
+      <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Ingresar</button>
+  </form>
+
+  <p>¿No tenés cuenta? <a href="{{ url_for('registro') }}">Registrate acá</a></p>
+{% endblock %}

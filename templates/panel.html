@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Usuario{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Mis Pedidos</h2>
+
+    {% if pedidos %}
+        <table class="table table-hover mt-3">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                    <tr>
+                        <td>{{ pedido.id }}</td>
+                        <td>{{ pedido.cliente_nombre or 'N/A' }}</td>
+                        <td>{{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{{ pedido.estado }}</td>
+                        <td>
+                            <a href="{{ url_for('ver_pedido', id=pedido.id) }}" class="btn btn-info btn-sm">Ver</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No tenés pedidos cargados aún.</p>
+    {% endif %}
+
+    <a href="{{ url_for('nuevo_pedido') }}" class="btn btn-success mt-3">Nuevo Pedido</a>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Pedido{% endblock %}
+
+{% block content %}
+  <h2>Crear nuevo pedido</h2>
+
+  <!-- Mensajes flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" class="mt-4">
+    <div class="mb-3">
+      <label for="dominio" class="form-label">Dominio</label>
+      <input type="text" class="form-control" id="dominio" name="dominio" placeholder="Ej: ABC123" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Crear pedido</button>
+  </form>
+
+  <a href="{{ url_for('panel') }}" class="btn btn-link mt-3">Volver al Panel</a>
+{% endblock %}

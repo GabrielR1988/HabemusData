@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Bienvenido{% endblock %}
+
+{% block content %}
+  <div class="text-center py-5">
+    <h1 class="display-4">¡Bienvenido a Informes del Automotor!</h1>
+    <p class="lead">Somos una empresa dedicada a proveer informes detallados sobre vehículos.</p>
+    <p>Accedé a tu cuenta o registrate para comenzar a utilizar nuestros servicios.</p>
+    {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary">Iniciar sesión</a>
+        <a href="{{ url_for('registro') }}" class="btn btn-secondary">Registrarse</a>
+    {% endif %}
+  </div>
+{% endblock %}
