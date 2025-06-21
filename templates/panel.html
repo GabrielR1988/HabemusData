@@ -5,27 +5,38 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Mis Pedidos</h2>
+    <h4>¡Hola, {{ usuario.nombre }}!</h4>
 
     {% if pedidos %}
-        <table class="table table-hover mt-3">
-            <thead>
+        <table class="table table-hover align-middle mt-3">
+            <thead class="table-light">
                 <tr>
-                    <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Fecha</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
+                    <th style="width: 5%;">ID</th>
+                    <th style="width: 20%;">Cliente</th>
+                    <th style="width: 20%;">Fecha</th>
+                    <th style="width: 15%;">Estado</th>
+                    <th style="width: 40%;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for pedido in pedidos %}
                     <tr>
                         <td>{{ pedido.id }}</td>
-                        <td>{{ pedido.cliente_nombre or 'N/A' }}</td>
+                        <td class="text-truncate" style="max-width: 150px;">{{ pedido.cliente_nombre or 'N/A' }}</td>
                         <td>{{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}</td>
                         <td>{{ pedido.estado }}</td>
                         <td>
-                            <a href="{{ url_for('ver_pedido', id=pedido.id) }}" class="btn btn-info btn-sm">Ver</a>
+                            {% if pedido.url_pdf %}
+                                <a href="{{ pedido.url_pdf }}" class="btn btn-primary btn-sm me-2" target="_blank">
+                                    Ver Informe
+                                </a>
+                            {% else %}
+                                <span class="text-muted me-2">Informe no disponible</span>
+                            {% endif %}
+
+                            <a href="{{ url_for('descargar_informe', id=pedido.id) }}" class="btn btn-success btn-sm" download>
+                                Descargar
+                            </a>
                         </td>
                     </tr>
                 {% endfor %}

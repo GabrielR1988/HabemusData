@@ -1,7 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
 from flask_wtf import FlaskForm
-from flask import session
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired
 from datetime import datetime
@@ -11,6 +10,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
 from flask_mail import Mail, Message
 from flask import flash
+from flask import send_file
+from supabase import create_client
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mi_clave_secreta'
@@ -38,9 +46,11 @@ db = SQLAlchemy(app)
 
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     nombre = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    telefono = db.Column(db.String(20))
+    provincia = db.Column(db.String(50))
 
 class Pedido(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -49,6 +59,7 @@ class Pedido(db.Model):
     estado = db.Column(db.String(50), default='En espera')  # Nuevo campo de estado
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     dominio = db.Column(db.String(20))
+    url_pdf = db.Column(db.String, nullable=True)
 
     def __repr__(self):
         return f'<Pedido {self.id} - {self.cliente_nombre}>'
@@ -85,10 +96,10 @@ class Mensaje(db.Model):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        email = request.form['email']
         password = request.form['password']
 
-        usuario = Usuario.query.filter_by(username=username).first()
+        usuario = Usuario.query.filter_by(email=email).first()
 
         #if usuario and check_password_hash(usuario.password, password):
             #session['usuario_id'] = usuario.id
@@ -118,8 +129,9 @@ def panel():
     #if 'usuario_id' not in session:
     #    return redirect(url_for('login'))
 
+    usuario = Usuario.query.get_or_404(current_user.id)
     pedidos = Pedido.query.filter_by(usuario_id=current_user.id).order_by(Pedido.fecha_pedido.desc()).all()
-    return render_template('panel.html', pedidos=pedidos)
+    return render_template('panel.html', pedidos=pedidos, usuario=usuario)
     
 @app.route('/nuevo_pedido', methods=['GET', 'POST'])
 @login_required
@@ -138,9 +150,29 @@ def nuevo_pedido():
             cliente_nombre=usuario.nombre
         )
 
-        # Guardar el pedido en la base de datos
         db.session.add(nuevo)
         db.session.commit()
+
+        # -------- Generar el PDF (ejemplo básico) --------
+        ruta_local = f"informes/informe_{nuevo.id}.pdf"
+        os.makedirs("informes", exist_ok=True)  # Asegura que la carpeta exista
+
+        with open(ruta_local, "wb") as f:
+            f.write(f"Informe del dominio {dominio}".encode("utf-8"))  # Podés reemplazar esto por tu lógica real
+
+        # -------- Subir a Supabase Storage --------
+        nombre_en_bucket = f"informe_{nuevo.id}.pdf"
+        try:
+            with open(ruta_local, "rb") as archivo:
+                supabase.storage.from_("informes").upload(nombre_en_bucket, archivo, {"upsert": True})
+            url_publica = supabase.storage.from_("informes").get_public_url(nombre_en_bucket)
+            nuevo.url_pdf = url_publica
+            db.session.commit()
+        except Exception as e:
+            flash("El pedido fue creado, pero hubo un problema al subir el informe a la nube.", "warning")
+            print("Error Supabase:", e)
+
+        # -------- Enviar el email --------
         try:
             msg = Message(
                 'Nuevo Pedido Creado',
@@ -152,7 +184,7 @@ def nuevo_pedido():
             flash('¡El pedido se creó y el correo se envió con éxito!', 'success')
         except Exception as e:
             flash('El pedido se creó, pero no se pudo enviar el correo.', 'warning')
-            print(e)  # Opcional: log para depurar
+            print(e)
 
         return redirect(url_for('panel'))
 
@@ -162,16 +194,29 @@ def nuevo_pedido():
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
-        username = request.form['username']
+        nombre = request.form['nombre']
+        email = request.form['email']
+        telefono = request.form['telefono']
+        provincia = request.form['provincia']
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
 
-        usuario_existente = Usuario.query.filter_by(username=username).first()
+        if password != confirm_password:
+            flash('Las contraseñas no coinciden.', 'danger')
+            return redirect(url_for('registro'))
+
+        usuario_existente = Usuario.query.filter_by(email=email).first()
         if usuario_existente:
             flash('El correo ya está registrado. Iniciá sesión o usá otro correo.', 'error')
             return redirect(url_for('registro'))
-
-        nueva_contraseña = generate_password_hash(password)
-        nuevo_usuario = Usuario(username=username, password=nueva_contraseña)
+        
+        nuevo_usuario = Usuario(
+            nombre=nombre,
+            email=email,
+            telefono=telefono,
+            provincia=provincia,
+            password=generate_password_hash(password)
+        )
         db.session.add(nuevo_usuario)
         db.session.commit()
 
@@ -186,7 +231,7 @@ def ver_pedido(id):
 
     # Verifica que el pedido sea del usuario logueado
     #if pedido.usuario_id != session['usuario_id']:
-    if pedido.usuario_id != int(current_user.id):
+    if pedido.usuario_id != current_user.id:
         return 'Acceso denegado'
 
     return render_template('detalle_pedido.html', pedido=pedido)
@@ -196,7 +241,7 @@ def eliminar_pedido(id):
     pedido = Pedido.query.get_or_404(id)
 
     #if pedido.usuario_id != session['usuario_id']:
-    if pedido.usuario_id != int(current_user.id):
+    if pedido.usuario_id != current_user.id:
         return 'Acceso denegado'
 
     db.session.delete(pedido)
@@ -251,14 +296,21 @@ def terminar(pedido_id):
 def pagina_no_encontrada(error):
     return render_template('404.html'), 404
 
-
-@app.before_request
-def mantener_sesion():
-    session.modified = True
-
 @app.route('/')
 def inicio():
     return render_template('inicio.html')
+
+from flask import send_file
+
+@app.route('/descargar/<int:id>')
+@login_required
+def descargar_informe(id):
+    pedido = Pedido.query.get_or_404(id)
+
+    # Ruta del archivo que querés que descargue
+    ruta_archivo = f"informes/informe_{pedido.id}.pdf"
+
+    return send_file(ruta_archivo, as_attachment=True)
 
 
 if __name__ == '__main__':

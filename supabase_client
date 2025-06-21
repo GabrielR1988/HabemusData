@@ -1,0 +1,17 @@
+from supabase import create_client
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def subir_pdf(nombre_local, ruta_local):
+    with open(ruta_local, "rb") as archivo:
+        supabase.storage.from_("informes").upload(nombre_local, archivo, {"upsert": True})
+
+def obtener_url(nombre_archivo):
+    return supabase.storage.from_("informes").get_public_url(nombre_archivo)
