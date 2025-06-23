@@ -18,7 +18,43 @@ import os
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+BUCKET_NAME = os.getenv("BUCKET_NAME")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def actualizar_pedidos_con_pdf(para_usuario_id):
+    bucket = supabase.storage.from_(BUCKET_NAME)
+    pedidos = Pedido.query.filter_by(usuario_id=para_usuario_id).all()
+
+    for pedido in pedidos:
+        archivo_esperado = f"{pedido.id}_{pedido.dominio.upper()}.pdf"
+
+        try:
+            archivos = bucket.list()
+            nombres = [obj['name'] for obj in archivos if archivo_esperado in obj['name']]
+
+            if nombres:
+                public_url = bucket.get_public_url(nombres[0])
+                if pedido.url_pdf != public_url:
+                    pedido.url_pdf = public_url
+                    print(f"[✓] PDF actualizado para pedido {pedido.id}")
+
+                    # Enviar email
+                    try:
+                        usuario = Usuario.query.get(pedido.usuario_id)
+                        mensaje = Message(
+                            subject="Tu informe ya está disponible",
+                            recipients=[usuario.email],
+                            body=f"Hola {usuario.nombre},\n\nTu informe del dominio {pedido.dominio} ya está disponible.\nPodés verlo desde tu panel de usuario."
+                        )
+                        mail.send(mensaje)
+                        print(f"✓ Email enviado a {usuario.email}")
+                    except Exception as e:
+                        print(f"⚠️ Error al enviar mail: {e}")
+
+        except Exception as e:
+            print(f"Error en pedido {pedido.id}: {str(e)}")
+
+    db.session.commit()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mi_clave_secreta'
@@ -74,9 +110,7 @@ class User(UserMixin):
     def __init__(self, id):
         self.id = id
 
-# Usuarios simulados
-#users = {'admin': {'password': 'admin123'}}
-
+# Usuarios
 @login_manager.user_loader
 def load_user(user_id):
     return User(user_id)
@@ -101,11 +135,6 @@ def login():
 
         usuario = Usuario.query.filter_by(email=email).first()
 
-        #if usuario and check_password_hash(usuario.password, password):
-            #session['usuario_id'] = usuario.id
-            #flash('Inicio de sesión exitoso.', 'success')
-            #return redirect(url_for('panel'))
-
         if usuario and check_password_hash(usuario.password, password):
             user_obj = User(usuario.id)
             login_user(user_obj)
@@ -126,12 +155,36 @@ def logout():
 @app.route('/panel')
 @login_required
 def panel():
-    #if 'usuario_id' not in session:
-    #    return redirect(url_for('login'))
+    # Solo verifica PDFs del usuario actual
+    actualizar_pedidos_con_pdf(current_user.id)
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    # Buscar por patente (dominio)
+    busqueda = request.args.get('buscar', '').upper().strip()
 
     usuario = Usuario.query.get_or_404(current_user.id)
-    pedidos = Pedido.query.filter_by(usuario_id=current_user.id).order_by(Pedido.fecha_pedido.desc()).all()
-    return render_template('panel.html', pedidos=pedidos, usuario=usuario)
+
+    # Filtrar solo por pedidos de este usuario
+    query = Pedido.query.filter_by(usuario_id=current_user.id)
+
+    # Si hay texto de búsqueda, filtrar por dominio
+    if busqueda:
+        query = query.filter(Pedido.dominio.like(f"%{busqueda}%"))
+
+    # Aplicar orden y paginación
+    pedidos_paginados = query.order_by(Pedido.fecha_pedido.desc()).paginate(page=page, per_page=per_page)
+
+    # Renderizar plantilla
+    return render_template(
+        'panel.html',
+        pedidos=pedidos_paginados.items,
+        usuario=usuario,
+        pagination=pedidos_paginados,
+        busqueda=busqueda
+    )
+
     
 @app.route('/nuevo_pedido', methods=['GET', 'POST'])
 @login_required
@@ -154,23 +207,22 @@ def nuevo_pedido():
         db.session.commit()
 
         # -------- Generar el PDF (ejemplo básico) --------
-        ruta_local = f"informes/informe_{nuevo.id}.pdf"
-        os.makedirs("informes", exist_ok=True)  # Asegura que la carpeta exista
-
-        with open(ruta_local, "wb") as f:
-            f.write(f"Informe del dominio {dominio}".encode("utf-8"))  # Podés reemplazar esto por tu lógica real
+        #ruta_local = f"informes/informe_{nuevo.id}.pdf"
+        #os.makedirs("informes", exist_ok=True)  # Asegura que la carpeta exista
+        #with open(ruta_local, "wb") as f:
+        #    f.write(f"Informe del dominio {dominio}".encode("utf-8"))  # Podés reemplazar esto por tu lógica real
 
         # -------- Subir a Supabase Storage --------
-        nombre_en_bucket = f"informe_{nuevo.id}.pdf"
-        try:
-            with open(ruta_local, "rb") as archivo:
-                supabase.storage.from_("informes").upload(nombre_en_bucket, archivo, {"upsert": True})
-            url_publica = supabase.storage.from_("informes").get_public_url(nombre_en_bucket)
-            nuevo.url_pdf = url_publica
-            db.session.commit()
-        except Exception as e:
-            flash("El pedido fue creado, pero hubo un problema al subir el informe a la nube.", "warning")
-            print("Error Supabase:", e)
+        #nombre_en_bucket = f"informe_{nuevo.id}.pdf"
+        #try:
+        #    with open(ruta_local, "rb") as archivo:
+        #        supabase.storage.from_("informes").upload(nombre_en_bucket, archivo, {"upsert": True})
+        #    url_publica = supabase.storage.from_("informes").get_public_url(nombre_en_bucket)
+        #    nuevo.url_pdf = url_publica
+        #    db.session.commit()
+        #except Exception as e:
+        #    flash("El pedido fue creado, pero hubo un problema al subir el informe a la nube.", "warning")
+        #    print("Error Supabase:", e)
 
         # -------- Enviar el email --------
         try:
@@ -228,9 +280,6 @@ def registro():
 @app.route('/pedido/<int:id>')
 def ver_pedido(id):
     pedido = Pedido.query.get_or_404(id)
-
-    # Verifica que el pedido sea del usuario logueado
-    #if pedido.usuario_id != session['usuario_id']:
     if pedido.usuario_id != current_user.id:
         return 'Acceso denegado'
 
@@ -307,8 +356,16 @@ from flask import send_file
 def descargar_informe(id):
     pedido = Pedido.query.get_or_404(id)
 
-    # Ruta del archivo que querés que descargue
+    if not pedido.url_pdf:
+        flash("El informe aún no está disponible para descargar.", "warning")
+        return redirect(url_for('panel'))
+
+    # Ruta del archivo local si lo estás buscando ahí
     ruta_archivo = f"informes/informe_{pedido.id}.pdf"
+
+    if not os.path.exists(ruta_archivo):
+        flash("El archivo no se encuentra disponible en el servidor.", "warning")
+        return redirect(url_for('panel'))
 
     return send_file(ruta_archivo, as_attachment=True)
 

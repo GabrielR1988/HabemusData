@@ -7,36 +7,47 @@
     <h2>Mis Pedidos</h2>
     <h4>¡Hola, {{ usuario.nombre }}!</h4>
 
+    <!-- Formulario de búsqueda -->
+    <form method="get" class="row g-2 mb-3">
+    <div class="col-md-4 col-sm-6">
+        <input type="text" name="buscar" class="form-control" placeholder="Buscar por patente (ej: AB123CD)" value="{{ busqueda or '' }}">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        {% if busqueda %}
+        <a href="{{ url_for('panel') }}" class="btn btn-secondary">Limpiar</a>
+        {% endif %}
+    </div>
+    </form>
+
     {% if pedidos %}
         <table class="table table-hover align-middle mt-3">
             <thead class="table-light">
                 <tr>
                     <th style="width: 5%;">ID</th>
-                    <th style="width: 20%;">Cliente</th>
-                    <th style="width: 20%;">Fecha</th>
+                    <th style="width: 15%;">Cliente</th>
+                    <th style="width: 15%;">Patente</th>
+                    <th style="width: 15%;">Fecha</th>
                     <th style="width: 15%;">Estado</th>
-                    <th style="width: 40%;">Acciones</th>
+                    <th style="width: 35%;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for pedido in pedidos %}
                     <tr>
                         <td>{{ pedido.id }}</td>
-                        <td class="text-truncate" style="max-width: 150px;">{{ pedido.cliente_nombre or 'N/A' }}</td>
+                        <td class="text-truncate">{{ pedido.cliente_nombre or 'N/A' }}</td>
+                        <td class="text-uppercase">{{ pedido.dominio }}</td>
                         <td>{{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}</td>
                         <td>{{ pedido.estado }}</td>
                         <td>
                             {% if pedido.url_pdf %}
-                                <a href="{{ pedido.url_pdf }}" class="btn btn-primary btn-sm me-2" target="_blank">
-                                    Ver Informe
-                                </a>
+                            <a href="{{ pedido.url_pdf }}" class="btn btn-primary btn-sm" target="_blank">Ver</a>
+                            <a href="{{ url_for('descargar_informe', id=pedido.id) }}" class="btn btn-success btn-sm mt-1">Descargar</a>
                             {% else %}
-                                <span class="text-muted me-2">Informe no disponible</span>
+                            <button class="btn btn-primary btn-sm" disabled>Ver</button>
+                            <button class="btn btn-success btn-sm mt-1" disabled>Descargar</button>
                             {% endif %}
-
-                            <a href="{{ url_for('descargar_informe', id=pedido.id) }}" class="btn btn-success btn-sm" download>
-                                Descargar
-                            </a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -48,4 +59,31 @@
 
     <a href="{{ url_for('nuevo_pedido') }}" class="btn btn-success mt-3">Nuevo Pedido</a>
 </div>
+
+{% if pagination.pages > 1 %}
+  <nav>
+    <ul class="pagination justify-content-center">
+      {% if pagination.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('panel', page=pagination.prev_num) }}">Anterior</a>
+        </li>
+      {% endif %}
+      {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if page_num %}
+          <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('panel', page=page_num) }}">{{ page_num }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+      {% if pagination.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('panel', page=pagination.next_num) }}">Siguiente</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+
 {% endblock %}
