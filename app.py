@@ -14,6 +14,8 @@ from flask import send_file
 from supabase import create_client
 from dotenv import load_dotenv
 import os
+from flask_migrate import Migrate
+
 
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -57,22 +59,40 @@ def actualizar_pedidos_con_pdf(para_usuario_id):
     db.session.commit()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'mi_clave_secreta'
+
+import logging
+from logging.handlers import RotatingFileHandler
+
+if not os.path.exists('logs'):
+    os.mkdir('logs')
+
+file_handler = RotatingFileHandler('logs/app.log', maxBytes=10240, backupCount=3)
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter(
+    '%(asctime)s %(levelname)s: %(message)s [en %(pathname)s:%(lineno)d]'
+))
+
+app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.INFO)
+app.logger.info('Aplicación iniciada')
+
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
 #Tiempo de sesion de 15 minutos
 app.permanent_session_lifetime = timedelta(minutes=15)
 
 # Configurar la base de datos SQLite
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.db')
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL").replace("postgres://", "postgresql://")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configuración del servidor SMTP
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'hg.rodriguez1988@gmail.com'
-app.config['MAIL_PASSWORD'] = 'neba mcqa kqjg xdaf'
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
 app.config['MAIL_DEFAULT_SENDER'] = 'hg.rodriguez1988@gmail.com'
 
 mail = Mail(app)
@@ -82,7 +102,7 @@ db = SQLAlchemy(app)
 
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    password = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(200), nullable=False)
     nombre = db.Column(db.String(100))
     email = db.Column(db.String(100), unique=True, nullable=False)
     telefono = db.Column(db.String(20))
@@ -99,6 +119,9 @@ class Pedido(db.Model):
 
     def __repr__(self):
         return f'<Pedido {self.id} - {self.cliente_nombre}>'
+    
+migrate = Migrate(app, db)
+# Crear las tablas en la base de datos
 
 # Inicializamos Flask-Login
 login_manager = LoginManager()
@@ -345,6 +368,10 @@ def terminar(pedido_id):
 def pagina_no_encontrada(error):
     return render_template('404.html'), 404
 
+@app.errorhandler(500)
+def error_interno(error):
+    return render_template('500.html'), 500
+
 @app.route('/')
 def inicio():
     return render_template('inicio.html')
@@ -371,4 +398,4 @@ def descargar_informe(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
