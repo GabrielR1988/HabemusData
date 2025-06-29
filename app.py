@@ -15,6 +15,7 @@ from supabase import create_client
 from dotenv import load_dotenv
 import os
 from flask_migrate import Migrate
+from flask import send_from_directory
 
 
 load_dotenv()
@@ -396,6 +397,9 @@ def descargar_informe(id):
 
     return send_file(ruta_archivo, as_attachment=True)
 
+@app.route('/robots.txt')
+def robots_txt():
+    return send_from_directory(app.root_path, 'robots.txt', mimetype='text/plain')
 
 if __name__ == '__main__':
     app.run(debug=False, host="0.0.0.0", port=8000)
