@@ -1,59 +1,217 @@
-/* Ajustes generales */
-body {
-  font-family: Arial, sans-serif;
+/* --- HEADER / NAVBAR --- */
+
+/* Fondo oscuro moderno (un gris azulado muy oscuro es más elegante que el negro puro) */
+.custom-navbar {
+  background-color: #1a1d20; /* Color oscuro profesional */
+  padding-top: 1rem;    /* Aumenta grosor arriba */
+  padding-bottom: 1rem; /* Aumenta grosor abajo */
+  transition: all 0.3s ease;
 }
 
-/* Encabezados principales */
-h1, h2, h3 {
-  font-weight: bold;
-}
-
-/* Formularios */
-form label {
-  display: block;
-  margin-top: 10px;
-}
-
-form input[type="text"],
-form input[type="password"],
-form input[type="email"],
-form textarea {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-form button[type="submit"] {
-  margin-top: 15px;
-}
-
-/* Mensajes flash */
-.alert {
-  margin-top: 10px;
-}
-
-/* Navbar brand */
+/* Marca / Logotipo */
 .navbar-brand {
-  font-weight: bold;
+  font-size: 1.5rem; /* Un poco más grande */
+  letter-spacing: 0.5px;
 }
 
-/* Links en el navbar */
+/* El span con clase text-primary usará el azul de Bootstrap por defecto, 
+   o podés definir tu propio color corporativo aquí */
+.text-primary {
+  color: #0d6efd !important; /* Azul Bootstrap (puedes cambiarlo a tu gusto) */
+}
+
+/* Enlaces del menú */
 .navbar-nav .nav-link {
-  color: #ddd !important;
+  color: #e0e0e0 !important; /* Blanco suave */
+  font-size: 0.95rem;
+  margin-right: 10px;
+  transition: color 0.2s;
 }
 
-/* Links activos */
-.navbar-nav .nav-link.active {
-  color: #fff !important;
-  font-weight: bold;
+.navbar-nav .nav-link:hover {
+  color: #ffffff !important; /* Blanco puro al pasar el mouse */
 }
 
-/* Footer (opcional si querés agregarlo) */
-footer {
-  text-align: center;
-  margin-top: 30px;
-  padding: 10px;
-  background: #f8f9fa;
+/* Botón de Registrarse (sobreescribe estilos de bootstrap si es necesario) */
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px); /* Efecto sutil de elevación */
+  background-color: #0b5ed7;
+}
+
+/* Sombra suave debajo del header */
+.shadow-sm {
+  box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;
+}
+
+/* --- FOOTER --- */
+.custom-footer {
+  background-color: #151719; /* Un poco más oscuro que el header para dar base */
+  font-size: 0.9rem;
+  border-top: 1px solid #2c3035; /* Una línea sutil arriba */
+}
+
+/* Títulos de las columnas */
+.custom-footer h6 {
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  color: #6c757d; /* Gris para los títulos, menos agresivo */
+  margin-bottom: 1.2rem;
+}
+
+/* Enlaces */
+.footer-link {
+  color: #adb5bd !important; /* Gris claro por defecto */
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.footer-link:hover {
+  color: #0d6efd !important; /* Azul HabemusData al pasar el mouse */
+  transform: translateX(5px); /* Pequeño movimiento a la derecha */
+}
+
+/* Botones de redes sociales (circulares) */
+.btn-floating {
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  line-height: 33px; /* Centra el ícono verticalmente */
+  border-color: #495057;
+  color: #adb5bd;
+}
+
+.btn-floating:hover {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+}
+
+/* --- LOGIN & REGISTRO --- */
+
+/* Centrado vertical: min-vh-75 asegura que ocupe buena parte de la altura */
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+/* Tarjeta Oscura Personalizada */
+.card-custom {
+    background-color: #212529; /* Gris muy oscuro, casi negro */
+    border: 1px solid #343a40; /* Borde sutil */
+    border-radius: 1rem; /* Bordes más redondeados */
+}
+
+/* Inputs Oscuros (Modo Dark real) */
+.form-control-dark {
+    background-color: #1a1d20; /* Fondo más oscuro que la tarjeta */
+    border: 1px solid #343a40;
+    color: #fff; /* Texto blanco */
+}
+
+.form-control-dark:focus {
+    background-color: #1a1d20;
+    border-color: #0d6efd; /* Azul al hacer foco */
+    color: #fff;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); /* Resplandor azul */
+}
+
+/* Ajuste de color para el texto del placeholder/label en inputs oscuros */
+.form-floating > label {
+    color: #6c757d; 
+}
+
+.form-floating > .form-control-dark:focus ~ label,
+.form-floating > .form-control-dark:not(:placeholder-shown) ~ label {
+    color: #adb5bd; /* Se aclara cuando sube */
+}
+
+/* Checkbox personalizado (opcional, para que combine mejor) */
+.form-check-input {
+    background-color: #1a1d20;
+    border-color: #343a40;
+}
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* --- SELECTOR OSCURO (Para el Registro) --- */
+.form-select-dark {
+    background-color: #1a1d20;
+    border: 1px solid #343a40;
+    color: #fff;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); /* Flechita blanca */
+}
+
+.form-select-dark:focus {
+    background-color: #1a1d20;
+    border-color: #0d6efd;
+    color: #fff;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* --- PANEL DE USUARIO --- */
+
+/* Estilos extra para inputs dentro de grupos (Buscador) */
+.input-group-text {
+    border-color: #343a40;
+}
+
+/* Tabla personalizada */
+.custom-table {
+    margin-bottom: 0;
+}
+
+.custom-table th {
+    font-weight: 600;
+    border-bottom: 1px solid #373b3e; /* Línea sutil bajo encabezados */
+}
+
+.custom-table td {
+    border-bottom: 1px solid #2c3034; /* Líneas muy sutiles entre filas */
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.letter-spacing-1 {
+    letter-spacing: 1px;
+}
+
+/* Badges con fondo transparente (Glass effect simple) */
+.bg-opacity-10 {
+    --bs-bg-opacity: 0.15;
+}
+
+/* Paginación Oscura */
+.pagination-dark .page-link {
+    background-color: #212529;
+    border-color: #343a40;
+    color: #fff;
+}
+
+.pagination-dark .page-link:hover {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+
+.pagination-dark .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.pagination-dark .page-item.disabled .page-link {
+    background-color: #1a1d20;
+    border-color: #343a40;
+    color: #6c757d;
+}
+
+/* Espaciado para leer mejor códigos/patentes */
+.letter-spacing-1 {
+    letter-spacing: 2px; /* Aumentamos un poquito más para la patente */
 }

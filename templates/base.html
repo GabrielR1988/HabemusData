@@ -27,10 +27,19 @@
 {% endwith %}
 
 <body class="bg-light">
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <nav class="navbar navbar-expand-lg navbar-dark custom-navbar mb-4 shadow-sm sticky-top">
     <div class="container">
-      <!-- Nombre de la empresa o página -->
-      <a class="navbar-brand" href="{{ url_for('inicio') }}">Informes del Automotor</a>
+      
+      <a class="navbar-brand fw-bold" href="{{ url_for('inicio') }}">
+          <img src="{{ url_for('static', filename='logo.jpeg') }}" 
+         alt="Logo" 
+         width="35" 
+         height="35" 
+         class="d-inline-block align-text-top me-2"
+         style="display: inline-block; visibility: visible; opacity: 1;">
+    
+        HABEMUS<span class="text-primary">DATA</span>
+      </a>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
               aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,26 +47,24 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <!-- Enlace a la página de inicio (siempre visible) -->
+        <ul class="navbar-nav ms-auto align-items-center">
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('inicio') }}">Inicio</a>
           </li>
 
           {% if current_user.is_authenticated %}
-          <!-- Botones que varian dependiendo de si el clietne esta logueado o no -->
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('panel') }}">Panel</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('logout') }}">Cerrar sesión</a>
+            <li class="nav-item ms-lg-2">
+              <a class="nav-link btn btn-outline-light btn-sm px-3 rounded-pill" href="{{ url_for('logout') }}">Cerrar sesión</a>
             </li>
           {% else %}
-            <li class="nav-item">
+            <li class="nav-item ms-lg-3">
               <a class="nav-link" href="{{ url_for('login') }}">Iniciar sesión</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('registro') }}">Registrarse</a>
+            <li class="nav-item ms-lg-2">
+              <a class="btn btn-primary btn-sm px-4 rounded-pill fw-bold" href="{{ url_for('registro') }}">Registrarse</a>
             </li>
           {% endif %}
         </ul>
@@ -71,6 +78,67 @@
 
   <!-- Bootstrap JS (opcional) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <footer class="custom-footer text-white pt-5 pb-4 mt-auto">
+    <div class="container text-center text-md-start">
+      <div class="row text-center text-md-start">
+        
+        <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+          <h5 class="text-uppercase mb-4 fw-bold d-flex align-items-center justify-content-center justify-content-md-start">
+             <i class="fas fa-car-side me-2 text-primary"></i> HabemusData
+          </h5>
+          <p class="small text-white-50">
+            Brindamos transparencia al mercado automotor. Informes de dominio, multas y situación legal al instante.
+          </p>
+        </div>
+
+        <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+          <h6 class="text-uppercase mb-4 fw-bold text-primary">Navegación</h6>
+          <p><a href="{{ url_for('inicio') }}" class="text-white text-decoration-none footer-link">Inicio</a></p>
+          {% if current_user.is_authenticated %}
+            <p><a href="{{ url_for('panel') }}" class="text-white text-decoration-none footer-link">Mi Panel</a></p>
+            <p><a href="{{ url_for('nuevo_pedido') }}" class="text-white text-decoration-none footer-link">Nuevo Informe</a></p>
+          {% else %}
+            <p><a href="{{ url_for('login') }}" class="text-white text-decoration-none footer-link">Ingresar</a></p>
+            <p><a href="{{ url_for('registro') }}" class="text-white text-decoration-none footer-link">Registrarse</a></p>
+          {% endif %}
+        </div>
+
+        <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
+          <h6 class="text-uppercase mb-4 fw-bold text-primary">Ayuda & Legal</h6>
+          <p><a href="#" class="text-white text-decoration-none footer-link">Preguntas Frecuentes</a></p>
+          <p><a href="#" class="text-white text-decoration-none footer-link">Términos de Uso</a></p>
+          <p><a href="#" class="text-white text-decoration-none footer-link">Política de Privacidad</a></p>
+          <p><a href="#" class="text-white text-decoration-none footer-link">Ayuda / Soporte</a></p>
+        </div>
+
+        <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
+          <h6 class="text-uppercase mb-4 fw-bold text-primary">Contacto</h6>
+          <p class="small"><i class="fas fa-envelope me-2"></i> info@habemusdata.com.ar</p>
+          <p class="small"><i class="fas fa-map-marker-alt me-2"></i> Buenos Aires, Argentina</p>
+          <p class="small"><i class="fas fa-clock me-2"></i> Lun-Vie: 9hs a 18hs</p>
+        </div>
+
+      </div>
+
+      <hr class="mb-4 border-secondary">
+
+      <div class="row align-items-center">
+        <div class="col-md-7 col-lg-8">
+          <p class="small text-white-50 mb-0">
+            © 2024 <strong>HabemusData</strong>. Todos los derechos reservados.
+            <br>No somos un sitio oficial del gobierno (DNRPA), somos una gestoría privada de información.
+          </p>
+        </div>
+        <div class="col-md-5 col-lg-4">
+          <div class="text-center text-md-end">
+            <a href="#" class="btn btn-outline-light btn-floating m-1 btn-sm rounded-circle" role="button"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="btn btn-outline-light btn-floating m-1 btn-sm rounded-circle" role="button"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 
 </html>
