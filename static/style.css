@@ -238,3 +238,7 @@ body {
     background-color: #212529; /* Asegura contraste con el fondo del body */
 }
 
+/* Corrección para textos secundarios (muted) en modo oscuro */
+.text-muted {
+    color: #adb5bd !important; /* Gris claro (casi blanco) para que se lea */
+}
