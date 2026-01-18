@@ -242,3 +242,24 @@ body {
 .text-muted {
     color: #adb5bd !important; /* Gris claro (casi blanco) para que se lea */
 }
+
+/* --- FIX ETIQUETAS FLOTANTES (El "cartel blanco") --- */
+
+/* 1. Quitamos el fondo blanco de la etiqueta */
+.form-floating > label {
+    background-color: transparent !important; 
+    color: #adb5bd !important; /* Gris claro para que se lea */
+}
+
+/* 2. Aseguramos que siga transparente cuando hacés clic o escribís */
+.form-floating > .form-control-dark:focus ~ label,
+.form-floating > .form-control-dark:not(:placeholder-shown) ~ label {
+    background-color: transparent !important;
+    color: #adb5bd !important;
+    opacity: 1; /* Para que no se vea transparente el texto, solo el fondo */
+}
+
+/* 3. (Opcional) Si ves que el texto se "monta" sobre el borde del input */
+/* Esto rellena la etiqueta con el mismo color oscuro del input para tapar la línea, si hiciera falta */
+/* Descomentá la siguiente línea si preferís que tape la línea del borde: */
+/* .form-floating > label::after { background-color: #1a1d20 !important; } */
