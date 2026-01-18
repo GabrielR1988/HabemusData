@@ -243,23 +243,19 @@ body {
     color: #adb5bd !important; /* Gris claro (casi blanco) para que se lea */
 }
 
-/* --- ARREGLO FINAL DE ETIQUETAS --- */
+/* --- FIX FINAL ETIQUETAS (Opción Transparente) --- */
+.form-floating > label {
+    background-color: transparent !important;
+    color: #adb5bd !important;
+}
 
-/* Usamos el mismo color del input (#1a1d20) para tapar la línea del borde */
-.form-floating > label,
+/* Esto elimina el "cartel" (blanco o negro) que pone Bootstrap atrás */
 .form-floating > label::after {
-    background-color: #1a1d20 !important; /* Color oscuro exacto */
-    color: #adb5bd !important;
+    background-color: transparent !important; 
 }
 
-/* Cuando el campo está activo */
-.form-floating > .form-control-dark:focus ~ label::after,
-.form-floating > .form-control-dark:not(:placeholder-shown) ~ label::after {
-    background-color: #1a1d20 !important; /* Mantiene el fondo oscuro */
-}
-
-.form-floating > .form-control-dark:focus ~ label,
-.form-floating > .form-control-dark:not(:placeholder-shown) ~ label {
-    color: #adb5bd !important;
-    opacity: 1;
+/* Color del texto cuando escribís */
+.form-control-dark {
+    background-color: #212529; /* O el color oscuro que prefieras */
+    color: #fff;
 }
