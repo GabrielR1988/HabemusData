@@ -243,22 +243,21 @@ body {
     color: #adb5bd !important; /* Gris claro (casi blanco) para que se lea */
 }
 
-/* --- ARREGLO FINAL DE ETIQUETAS FLOTANTES --- */
+/* --- ARREGLO FINAL DE ETIQUETAS --- */
 
-/* 1. Hacemos transparente la etiqueta Y su capa trasera (::after) */
+/* Usamos el mismo color del input (#1a1d20) para tapar la línea del borde */
 .form-floating > label,
 .form-floating > label::after {
-    background-color: transparent !important; 
-    color: #adb5bd !important; /* Gris claro */
+    background-color: #1a1d20 !important; /* Color oscuro exacto */
+    color: #adb5bd !important;
 }
 
-/* 2. Cuando el campo está activo o lleno */
+/* Cuando el campo está activo */
 .form-floating > .form-control-dark:focus ~ label::after,
 .form-floating > .form-control-dark:not(:placeholder-shown) ~ label::after {
-    background-color: transparent !important; 
+    background-color: #1a1d20 !important; /* Mantiene el fondo oscuro */
 }
 
-/* 3. Aseguramos que el texto se mantenga visible */
 .form-floating > .form-control-dark:focus ~ label,
 .form-floating > .form-control-dark:not(:placeholder-shown) ~ label {
     color: #adb5bd !important;
