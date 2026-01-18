@@ -215,3 +215,26 @@
 .letter-spacing-1 {
     letter-spacing: 2px; /* Aumentamos un poquito más para la patente */
 }
+
+/* --- CORRECCIONES GLOBALES Y DE CONTRASTE --- */
+
+/* 1. Fondo general del sitio (Body) */
+/* Esto soluciona que "Mis Pedidos" no se vea. Ahora el fondo será oscuro. */
+body {
+    background-color: #151719; /* Gris muy oscuro (mismo tono base que usamos en el footer) */
+    color: #e0e0e0; /* Texto general en gris claro para lectura fácil */
+}
+
+/* 2. Corrección del Placeholder (Texto de ayuda en inputs oscuros) */
+/* Esto hace que "Buscar patente..." se vea gris claro en vez de negro */
+.form-control-dark::placeholder {
+    color: #adb5bd !important; /* Gris claro visible */
+    opacity: 0.8;
+}
+
+/* Opcional: Para asegurar que el texto que escribís también se vea bien */
+.form-control-dark {
+    color: #fff !important; 
+    background-color: #212529; /* Asegura contraste con el fondo del body */
+}
+
