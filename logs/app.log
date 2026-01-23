@@ -1,53 +1,4 @@
-2026-01-18 13:04:06,686 ERROR: Exception on /login [POST] [en C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\flask\app.py:875]
-Traceback (most recent call last):
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 146, in __init__
-    self._dbapi_connection = engine.raw_connection()
-                             ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3298, in raw_connection
-    return self.pool.connect()
-           ~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 449, in connect
-    return _ConnectionFairy._checkout(self)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1264, in _checkout
-    fairy = _ConnectionRecord.checkout(pool)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 713, in checkout
-    rec = pool._do_get()
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 179, in _do_get
-    with util.safe_reraise():
-         ~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
-    return self._create_connection()
-           ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 390, in _create_connection
-    return _ConnectionRecord(self)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 675, in __init__
-    self.__connect()
-    ~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 901, in __connect
-    with util.safe_reraise():
-         ~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 897, in __connect
-    self.dbapi_connection = connection = pool._invoke_creator(self)
-                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\create.py", line 646, in connect
-    return dialect.connect(*cargs, **cparams)
-           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 625, in connect
-    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
-           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\psycopg2\__init__.py", line 135, in connect
-    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
-psycopg2.OperationalError: connection to server at "aws-0-us-west-2.pooler.supabase.com" (44.238.118.41), port 5432 failed: FATAL:  password authentication failed for user "postgres"
-connection to server at "aws-0-us-west-2.pooler.supabase.com" (44.238.118.41), port 5432 failed: FATAL:  password authentication failed for user "postgres"
-
-
-The above exception was the direct cause of the following exception:
-
+2026-01-23 14:12:43,951 ERROR: Exception on / [GET] [en C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\flask\app.py:875]
 Traceback (most recent call last):
   File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
     response = self.full_dispatch_request()
@@ -58,97 +9,25 @@ Traceback (most recent call last):
   File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\app.py", line 160, in login
-    usuario = Usuario.query.filter_by(email=email).first()
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
-    return self.limit(1)._iter().first()  # type: ignore
-           ~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
-    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
-                                                  ~~~~~~~~~~~~~~~~~~~~^
-        statement,
-        ^^^^^^^^^^
-        params,
-        ^^^^^^^
-        execution_options={"_sa_orm_load_options": self.load_options},
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
-    return self._execute_internal(
-           ~~~~~~~~~~~~~~~~~~~~~~^
-        statement,
-        ^^^^^^^^^^
-    ...<4 lines>...
-        _add_event=_add_event,
-        ^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2241, in _execute_internal
-    conn = self._connection_for_bind(bind)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2110, in _connection_for_bind
-    return trans._connection_for_bind(engine, execution_options)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<string>", line 2, in _connection_for_bind
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
-    ret_value = fn(self, *arg, **kw)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1189, in _connection_for_bind
-    conn = bind.connect()
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3274, in connect
-    return self._connection_cls(self)
-           ~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 148, in __init__
-    Connection._handle_dbapi_exception_noconnection(
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        err, dialect, engine
-        ^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2439, in _handle_dbapi_exception_noconnection
-    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 146, in __init__
-    self._dbapi_connection = engine.raw_connection()
-                             ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3298, in raw_connection
-    return self.pool.connect()
-           ~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 449, in connect
-    return _ConnectionFairy._checkout(self)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1264, in _checkout
-    fairy = _ConnectionRecord.checkout(pool)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 713, in checkout
-    rec = pool._do_get()
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 179, in _do_get
-    with util.safe_reraise():
-         ~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
-    return self._create_connection()
-           ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 390, in _create_connection
-    return _ConnectionRecord(self)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 675, in __init__
-    self.__connect()
-    ~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 901, in __connect
-    with util.safe_reraise():
-         ~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\pool\base.py", line 897, in __connect
-    self.dbapi_connection = connection = pool._invoke_creator(self)
-                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\create.py", line 646, in connect
-    return dialect.connect(*cargs, **cparams)
-           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 625, in connect
-    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
-           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\psycopg2\__init__.py", line 135, in connect
-    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
-sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "aws-0-us-west-2.pooler.supabase.com" (44.238.118.41), port 5432 failed: FATAL:  password authentication failed for user "postgres"
-connection to server at "aws-0-us-west-2.pooler.supabase.com" (44.238.118.41), port 5432 failed: FATAL:  password authentication failed for user "postgres"
-
-(Background on this error at: https://sqlalche.me/e/20/e3q8)
+  File "C:\Users\Gabriel\informes-automotor\app.py", line 378, in inicio
+    return render_template('inicio.html')
+  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\flask\templating.py", line 149, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\jinja2\environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\jinja2\environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\jinja2\environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\jinja2\loaders.py", line 138, in load
+    code = environment.compile(source, name, filename)
+  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\jinja2\environment.py", line 771, in compile
+    self.handle_exception(source=source_hint)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Gabriel\informes-automotor\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\Gabriel\informes-automotor\templates\inicio.html", line 191, in template
+    {% endblock %}
+jinja2.exceptions.TemplateSyntaxError: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
