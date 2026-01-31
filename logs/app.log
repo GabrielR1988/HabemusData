@@ -31,3 +31,8 @@ Traceback (most recent call last):
   File "C:\Users\Gabriel\informes-automotor\templates\inicio.html", line 191, in template
     {% endblock %}
 jinja2.exceptions.TemplateSyntaxError: Unexpected end of template. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+2026-01-31 11:48:06,295 INFO: Aplicación iniciada [en C:\Users\Gabriel\informes-automotor\app.py:78]
+2026-01-31 11:55:19,473 INFO: Aplicación iniciada [en C:\Users\Gabriel\informes-automotor\app.py:78]
+2026-01-31 12:01:07,278 INFO: Aplicación iniciada [en C:\Users\Gabriel\informes-automotor\app.py:78]
+2026-01-31 12:05:52,547 INFO: Aplicación iniciada [en C:\Users\Gabriel\informes-automotor\app.py:78]
+2026-01-31 12:09:38,154 INFO: Aplicación iniciada [en C:\Users\Gabriel\informes-automotor\app.py:78]

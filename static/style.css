@@ -259,3 +259,96 @@ body {
     background-color: #212529; /* O el color oscuro que prefieras */
     color: #fff;
 }
+
+/* --- ESTILOS HABEMUS PREMIUM (HEADER Y FOOTER) --- */
+
+/* Color de Fondo Unificado */
+.bg-premium-black {
+  background-color: #0a0a0a !important; 
+}
+
+/* Borde inferior solo para el Header (Navbar) */
+nav.bg-premium-black {
+  border-bottom: 1px solid #1a1a1a;
+}
+
+/* Borde superior solo para el Footer */
+footer.bg-premium-black {
+  border-top: 1px solid #1a1a1a;
+}
+
+/* Tipografía del Logo */
+.brand-text {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+
+/* Ajustes de Links del Footer para que brillen al pasar el mouse */
+.footer-link {
+  transition: color 0.2s ease;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+.footer-link:hover {
+  text-decoration: none !important;
+  color: #fff !important;
+  opacity: 1;
+}
+
+/* Ajustes de Navbar Links */
+.navbar-dark .nav-link {
+  color: rgba(255,255,255,0.7);
+  transition: all 0.3s ease;
+}
+.navbar-dark .nav-link:hover, .navbar-dark .nav-link.active {
+  color: #fff;
+}
+
+/* --- ESTILOS HABEMUS PREMIUM (HEADER Y FOOTER) --- */
+
+/* Color de Fondo Unificado */
+.bg-premium-black {
+  background-color: #0a0a0a !important; 
+}
+
+/* Bordes sutiles */
+nav.bg-premium-black { border-bottom: 1px solid #1a1a1a; }
+footer.bg-premium-black { border-top: 1px solid #1a1a1a; }
+
+/* Tipografía del Logo */
+.brand-text {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+
+/* NUEVO: Azul Tech Vibrante para 'DATA' */
+.text-habemus-blue {
+  color: #3b82f6 !important; /* Azul eléctrico brillante */
+}
+
+/* Ajustes Footer */
+.footer-link {
+  transition: color 0.2s ease;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+.footer-link:hover {
+  text-decoration: none !important;
+  color: #3b82f6 !important; /* Al pasar el mouse también se pone azul */
+  opacity: 1;
+}
+
+/* Navbar Links */
+.navbar-dark .nav-link {
+  color: rgba(255,255,255,0.7);
+  transition: all 0.3s ease;
+}
+.navbar-dark .nav-link:hover, .navbar-dark .nav-link.active {
+  color: #fff;
+}

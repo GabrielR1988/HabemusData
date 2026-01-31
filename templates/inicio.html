@@ -2,17 +2,9 @@
 
 {% block title %}Inicio - HabemusData{% endblock %}
 
-{% block content %}
-
+{% block hero %}
 <style>
-    /* Forzamos el fondo claro solo en el contenido de esta página */
-    .simplidata-body {
-        background-color: #f8f9fa; /* Gris muy suave */
-        color: #333; /* Texto oscuro */
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
-    
-    /* HERO SECTION */
+    /* HERO SECTION (Ocupa todo el ancho) */
     .hero-section {
         background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80');
         background-size: cover;
@@ -20,6 +12,7 @@
         padding: 100px 0;
         color: white;
         text-align: center;
+        width: 100%; /* Asegura ancho completo */
     }
 
     /* CAJA DEL BUSCADOR FLOTANTE */
@@ -32,7 +25,33 @@
         margin: 0 auto;
         color: #333;
     }
+</style>
 
+<section class="hero-section">
+    <div class="container">
+        <h1 class="fw-bold mb-3 display-5">COMPRÁ SEGURO</h1>
+        <p class="lead mb-4 opacity-75">Conocé el historial real de tu próximo auto usado.</p>
+        
+        <div class="search-box-card">
+            <form action="{{ url_for('nuevo_pedido') }}" method="GET"> 
+                <label class="form-label fw-bold mb-2">Ingresá la patente del vehículo</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control form-control-lg text-uppercase text-center fw-bold" placeholder="AA123BB" name="dominio" required style="letter-spacing: 2px;">
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-pill">
+                        ¡Obtené tu reporte!
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+
+<style>
     /* TARJETAS DE PRECIOS */
     .price-card {
         background: white;
@@ -49,7 +68,7 @@
         box-shadow: 0 12px 20px rgba(0,0,0,0.1);
     }
 
-    /* Colores específicos para las tarjetas (Lite, Full, Premium) */
+    /* Colores específicos para las tarjetas */
     .card-lite { border-top-color: #6c757d; }
     .card-full { border-top-color: #0d6efd; } /* Azul */
     .card-premium { border-top-color: #ffc107; } /* Dorado */
@@ -73,88 +92,65 @@
 </style>
 
 <div class="simplidata-body pb-5">
-
-    <section class="hero-section">
-        <div class="container">
-            <h1 class="fw-bold mb-3 display-5">COMPRÁ SEGURO</h1>
-            <p class="lead mb-4 opacity-75">Conocé el historial real de tu próximo auto usado.</p>
-            
-            <div class="search-box-card">
-                <form action="{{ url_for('nuevo_pedido') }}" method="GET"> 
-                    <label class="form-label fw-bold mb-2">Ingresá la patente del vehículo</label>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control form-control-lg text-uppercase text-center fw-bold" placeholder="AA123BB" name="dominio" required style="letter-spacing: 2px;">
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-pill">
-                            ¡Obtené tu reporte!
-                        </button>
-                    </div>
-                </form>
-            </div>
+    
+    <div class="row text-center mb-5 mt-5">
+        <div class="col-12">
+            <h2 class="fw-bold">Elegí el informe a tu medida</h2>
+            <p class="text-muted">Información oficial directo de la base de datos.</p>
         </div>
-    </section>
+    </div>
 
-    <div class="container mt-n5 pt-5"> 
-        <div class="row text-center mb-5">
-            <div class="col-12 mt-5">
-                <h2 class="fw-bold">Elegí el informe a tu medida</h2>
-                <p class="text-muted">Información oficial directo de la base de datos.</p>
+    <div class="row g-4 row-cols-1 row-cols-md-3">
+        
+        <div class="col">
+            <div class="card price-card card-lite p-4">
+                <h4 class="fw-bold text-secondary">Básico</h4>
+                <div class="my-3">
+                    <span class="price-amount">$3.500</span>
+                </div>
+                <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
+                    <li><i class="fas fa-check"></i> Titularidad</li>
+                    <li><i class="fas fa-check"></i> Modelo y Año</li>
+                    <li class="text-muted"><i class="fas fa-times text-danger"></i> Multas</li>
+                    <li class="text-muted"><i class="fas fa-times text-danger"></i> Deudas Patente</li>
+                </ul>
+                <a href="{{ url_for('registro') }}" class="btn btn-outline-secondary rounded-pill mt-3 w-100 fw-bold">Ver Ejemplo</a>
             </div>
         </div>
 
-        <div class="row g-4 row-cols-1 row-cols-md-3">
-            
-            <div class="col">
-                <div class="card price-card card-lite p-4">
-                    <h4 class="fw-bold text-secondary">Básico</h4>
-                    <div class="my-3">
-                        <span class="price-amount">$3.500</span>
-                    </div>
-                    <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
-                        <li><i class="fas fa-check"></i> Titularidad</li>
-                        <li><i class="fas fa-check"></i> Modelo y Año</li>
-                        <li class="text-muted"><i class="fas fa-times text-danger"></i> Multas</li>
-                        <li class="text-muted"><i class="fas fa-times text-danger"></i> Deudas Patente</li>
-                    </ul>
-                    <a href="{{ url_for('registro') }}" class="btn btn-outline-secondary rounded-pill mt-3 w-100 fw-bold">Ver Ejemplo</a>
+        <div class="col">
+            <div class="card price-card card-full p-4 border shadow">
+                <span class="badge bg-primary position-absolute top-0 start-50 translate-middle rounded-pill px-3">MÁS VENDIDO</span>
+                <h4 class="fw-bold text-primary">Completo</h4>
+                <div class="my-3">
+                    <span class="price-amount">$14.500</span>
                 </div>
+                <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
+                    <li><i class="fas fa-check"></i> <strong>Todo lo del Básico</strong></li>
+                    <li><i class="fas fa-check"></i> Infracciones de Tránsito</li>
+                    <li><i class="fas fa-check"></i> Deudas de Patente</li>
+                    <li><i class="fas fa-check"></i> Embargos / Inhibiciones</li>
+                </ul>
+                <a href="{{ url_for('registro') }}" class="btn btn-primary rounded-pill mt-3 w-100 fw-bold">Comprar Ahora</a>
             </div>
-
-            <div class="col">
-                <div class="card price-card card-full p-4 border shadow">
-                    <span class="badge bg-primary position-absolute top-0 start-50 translate-middle rounded-pill px-3">MÁS VENDIDO</span>
-                    <h4 class="fw-bold text-primary">Completo</h4>
-                    <div class="my-3">
-                        <span class="price-amount">$14.500</span>
-                    </div>
-                    <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
-                        <li><i class="fas fa-check"></i> <strong>Todo lo del Básico</strong></li>
-                        <li><i class="fas fa-check"></i> Infracciones de Tránsito</li>
-                        <li><i class="fas fa-check"></i> Deudas de Patente</li>
-                        <li><i class="fas fa-check"></i> Embargos / Inhibiciones</li>
-                    </ul>
-                    <a href="{{ url_for('registro') }}" class="btn btn-primary rounded-pill mt-3 w-100 fw-bold">Comprar Ahora</a>
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="card price-card card-premium p-4">
-                    <h4 class="fw-bold text-warning">Premium</h4>
-                    <div class="my-3">
-                        <span class="price-amount">$24.000</span>
-                    </div>
-                    <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
-                        <li><i class="fas fa-check"></i> <strong>Informe Completo</strong></li>
-                        <li><i class="fas fa-check"></i> Historial DNRPA Oficial</li>
-                        <li><i class="fas fa-check"></i> Recalls de Fábrica</li>
-                        <li><i class="fas fa-check"></i> Precios de Mercado</li>
-                    </ul>
-                    <a href="{{ url_for('registro') }}" class="btn btn-outline-warning text-dark rounded-pill mt-3 w-100 fw-bold">Ver Más</a>
-                </div>
-            </div>
-
         </div>
+
+        <div class="col">
+            <div class="card price-card card-premium p-4">
+                <h4 class="fw-bold text-warning">Premium</h4>
+                <div class="my-3">
+                    <span class="price-amount">$24.000</span>
+                </div>
+                <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
+                    <li><i class="fas fa-check"></i> <strong>Informe Completo</strong></li>
+                    <li><i class="fas fa-check"></i> Historial DNRPA Oficial</li>
+                    <li><i class="fas fa-check"></i> Recalls de Fábrica</li>
+                    <li><i class="fas fa-check"></i> Precios de Mercado</li>
+                </ul>
+                <a href="{{ url_for('registro') }}" class="btn btn-outline-warning text-dark rounded-pill mt-3 w-100 fw-bold">Ver Más</a>
+            </div>
+        </div>
+
     </div>
 
     <div class="container py-5 mt-4">
