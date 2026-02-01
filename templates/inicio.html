@@ -12,7 +12,7 @@
         padding: 100px 0;
         color: white;
         text-align: center;
-        width: 100%; /* Asegura ancho completo */
+        width: 100%; 
     }
 
     /* CAJA DEL BUSCADOR FLOTANTE */
@@ -60,7 +60,29 @@
         box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         height: 100%;
-        border-top: 4px solid #dee2e6; /* Borde gris por defecto */
+        border-top: 4px solid #dee2e6;
+        
+        /* Habilitamos posición relativa para controlar el fondo */
+        position: relative;
+        overflow: hidden; /* Evita que el logo se salga de los bordes */
+        z-index: 1; /* Asegura que el contenido esté sobre el fondo */
+    }
+
+    /* AQUÍ ESTÁ LA MAGIA: Logo de fondo como marca de agua */
+    .price-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        
+        /* Asegúrate que el nombre del archivo sea correcto (logo.jpeg) */
+        background-image: url('{{ url_for("static", filename="logo.jpeg") }}');
+        
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 50%; /* Tamaño del logo dentro de la card */
+        opacity: 0.05; /* Opacidad MUY BAJA (5%) para no molestar */
+        filter: grayscale(100%); /* Lo hace gris para que no compita con los colores */
+        z-index: -1; /* Lo manda al fondo detrás del texto */
     }
 
     .price-card:hover {
@@ -70,8 +92,8 @@
 
     /* Colores específicos para las tarjetas */
     .card-lite { border-top-color: #6c757d; }
-    .card-full { border-top-color: #0d6efd; } /* Azul */
-    .card-premium { border-top-color: #ffc107; } /* Dorado */
+    .card-full { border-top-color: #0d6efd; } 
+    .card-premium { border-top-color: #ffc107; }
 
     .price-amount {
         font-size: 2rem;
@@ -86,7 +108,7 @@
         color: #555;
     }
     .feature-list i {
-        color: #28a745; /* Tilde verde */
+        color: #28a745; 
         margin-right: 8px;
     }
 </style>
@@ -96,6 +118,7 @@
     <div class="row text-center mb-5 mt-5">
         <div class="col-12">
             <h2 class="fw-bold" style="color: #000000 !important;">Elegí el informe a tu medida</h2>
+            <p class="text-muted">Información oficial directo de la base de datos.</p>
         </div>
     </div>
 
@@ -103,14 +126,15 @@
         
         <div class="col">
             <div class="card price-card card-lite p-4">
-                <h4 class="fw-bold text-secondary">Bronce </h4>
-                <img src="{{ url_for('static', filename='LogoBN.png') }}" alt="HabemusData" width="35" height="35" class="d-inline-block align-text-top">
+                <h4 class="fw-bold text-secondary">Básico</h4>
                 <div class="my-3">
                     <span class="price-amount">$3.500</span>
                 </div>
                 <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
-                    <li><i class="fas fa-check"></i> Infracciones </li>
-                    <li><i class="fas fa-check"></i> Deuda de patente </li>
+                    <li><i class="fas fa-check"></i> Titularidad</li>
+                    <li><i class="fas fa-check"></i> Modelo y Año</li>
+                    <li class="text-muted"><i class="fas fa-times text-danger"></i> Multas</li>
+                    <li class="text-muted"><i class="fas fa-times text-danger"></i> Deudas Patente</li>
                 </ul>
                 <a href="{{ url_for('registro') }}" class="btn btn-outline-secondary rounded-pill mt-3 w-100 fw-bold">Ver Ejemplo</a>
             </div>
@@ -119,16 +143,15 @@
         <div class="col">
             <div class="card price-card card-full p-4 border shadow">
                 <span class="badge bg-primary position-absolute top-0 start-50 translate-middle rounded-pill px-3">MÁS VENDIDO</span>
-                <h4 class="fw-bold text-primary">Plata <span><img src="{{ url_for('static', filename='LogoBN.png') }}" alt="HabemusData" width="35" height="35" class="d-inline-block align-text-top"></span></h4>
+                <h4 class="fw-bold text-primary">Completo</h4>
                 <div class="my-3">
-                    <span class="price-amount">$14.000</span>
+                    <span class="price-amount">$14.500</span>
                 </div>
                 <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
-                    <li><i class="fas fa-check"></i> <strong>Todo lo del informe Bronce</strong></li>
-                    <li><i class="fas fa-check"></i> Radicacion</li>
-                    <li><i class="fas fa-check"></i> Precio de Mercado</li>
-                    <li><i class="fas fa-check"></i> Resultados de Inspección VTV</li>
-                    <li><i class="fas fa-check"></i> GNC</li>
+                    <li><i class="fas fa-check"></i> <strong>Todo lo del Básico</strong></li>
+                    <li><i class="fas fa-check"></i> Infracciones de Tránsito</li>
+                    <li><i class="fas fa-check"></i> Deudas de Patente</li>
+                    <li><i class="fas fa-check"></i> Embargos / Inhibiciones</li>
                 </ul>
                 <a href="{{ url_for('registro') }}" class="btn btn-primary rounded-pill mt-3 w-100 fw-bold">Comprar Ahora</a>
             </div>
@@ -136,16 +159,15 @@
 
         <div class="col">
             <div class="card price-card card-premium p-4">
-                <h4 class="fw-bold text-warning">ORO </h4>
-                <img src="{{ url_for('static', filename='LogoBN.png') }}" alt="HabemusData" width="35" height="35" class="d-inline-block align-text-top">
+                <h4 class="fw-bold text-warning">Premium</h4>
                 <div class="my-3">
                     <span class="price-amount">$24.000</span>
                 </div>
                 <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
-                    <li><i class="fas fa-check"></i> <strong>Todo lo del informe Plata</strong></li>
+                    <li><i class="fas fa-check"></i> <strong>Informe Completo</strong></li>
                     <li><i class="fas fa-check"></i> Historial DNRPA Oficial</li>
                     <li><i class="fas fa-check"></i> Recalls de Fábrica</li>
-                    <li><i class="fas fa-check"></i> Informe sobre inhibiciones</li>
+                    <li><i class="fas fa-check"></i> Precios de Mercado</li>
                 </ul>
                 <a href="{{ url_for('registro') }}" class="btn btn-outline-warning text-dark rounded-pill mt-3 w-100 fw-bold">Ver Más</a>
             </div>
@@ -154,26 +176,26 @@
     </div>
 
     <div class="container py-5 mt-4">
-        <h3 class="fw-bold text-center mb-5">¿Qué incluye el reporte?</h3>
+        <h3 class="fw-bold text-center mb-5" style="color: #000 !important;">¿Qué incluye el reporte?</h3>
         <div class="row g-4 text-center">
             <div class="col-6 col-md-3">
                 <i class="fas fa-car-crash fa-2x text-primary mb-3"></i>
-                <h6 class="fw-bold">Siniestros</h6>
+                <h6 class="fw-bold text-black">Siniestros</h6>
                 <p class="small text-muted">Chequeo de accidentes previos.</p>
             </div>
             <div class="col-6 col-md-3">
                 <i class="fas fa-file-invoice-dollar fa-2x text-primary mb-3"></i>
-                <h6 class="fw-bold">Multas</h6>
+                <h6 class="fw-bold text-black">Multas</h6>
                 <p class="small text-muted">Infracciones a nivel nacional.</p>
             </div>
             <div class="col-6 col-md-3">
                 <i class="fas fa-gavel fa-2x text-primary mb-3"></i>
-                <h6 class="fw-bold">Legalidad</h6>
+                <h6 class="fw-bold text-black">Legalidad</h6>
                 <p class="small text-muted">Embargos e inhibiciones.</p>
             </div>
             <div class="col-6 col-md-3">
                 <i class="fas fa-tachometer-alt fa-2x text-primary mb-3"></i>
-                <h6 class="fw-bold">Kilometraje</h6>
+                <h6 class="fw-bold text-black">Kilometraje</h6>
                 <p class="small text-muted">Estimación real de uso.</p>
             </div>
         </div>
