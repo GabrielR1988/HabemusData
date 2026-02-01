@@ -54,3 +54,4 @@ jinja2.exceptions.TemplateSyntaxError: Unexpected end of template. Jinja was loo
 2026-02-01 18:52:24,696 INFO: Aplicación iniciada [en C:\Users\Gabriel\informes-automotor\app.py:78]
 2026-02-01 18:53:24,702 INFO: Aplicación iniciada [en C:\Users\Gabriel\informes-automotor\app.py:78]
 2026-02-01 19:09:58,134 INFO: Aplicación iniciada [en C:\Users\Gabriel\informes-automotor\app.py:78]
+2026-02-01 19:13:04,276 INFO: Aplicación iniciada [en C:\Users\Gabriel\informes-automotor\app.py:78]
