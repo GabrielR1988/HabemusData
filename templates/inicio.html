@@ -4,46 +4,89 @@
 
 {% block hero %}
 <style>
-    /* HERO SECTION */
-    .hero-section {
-        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80');
-        background-size: cover;
-        background-position: center;
-        padding: 100px 0;
-        color: white;
-        text-align: center;
-        width: 100%; 
+    /* 1. SECCIÓN HERO: Fondo Blanco Puro */
+    .hero-section-clean {
+        background-color: #ffffff !important; 
+        padding: 80px 0;
+        color: #212529;
     }
 
-    /* CAJA DEL BUSCADOR */
+    /* 2. ALINEACIÓN DE LA FOTO (Izquierda) */
+    .hero-image {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
+    /* 3. ALINEACIÓN DEL TEXTO (Derecha) */
+    .hero-text-col {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-left: 50px;
+    }
+
+    @media (max-width: 768px) {
+        .hero-text-col {
+            padding-left: 15px;
+            padding-right: 15px;
+            text-align: center;
+            margin-top: 30px;
+        }
+    }
+
+    .hero-title-dark {
+        color: #1a1d20;
+        font-weight: 800;
+        margin-bottom: 15px;
+    }
+
+    .hero-lead-dark {
+        color: #555;
+        margin-bottom: 30px;
+    }
+
+    /* 4. EL BUSCADOR ORIGINAL (Estilo Tarjeta) */
     .search-box-card {
         background: white;
         border-radius: 8px;
         padding: 30px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        max-width: 500px;
-        margin: 0 auto;
+        /* Le dejamos una sombra linda para que despegue del fondo blanco */
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+        max-width: 100%; 
         color: #333;
+        text-align: left; /* Mantenemos el texto de la etiqueta a la izquierda */
     }
 </style>
 
-<section class="hero-section">
+<section class="hero-section-clean">
     <div class="container">
-        <h1 class="fw-bold mb-3 display-5">COMPRÁ SEGURO</h1>
-        <p class="lead mb-4 opacity-75">Conocé el historial real de tu próximo auto usado.</p>
-        
-        <div class="search-box-card">
-            <form action="{{ url_for('nuevo_pedido') }}" method="GET"> 
-                <label class="form-label fw-bold mb-2">Ingresá la patente del vehículo</label>
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control form-control-lg text-uppercase text-center fw-bold" placeholder="AA123BB" name="dominio" required style="letter-spacing: 2px;">
+        <div class="row align-items-center">
+            
+            <div class="col-md-6 text-center text-md-start">
+                <img src="{{ url_for('static', filename='auto_main5.png') }}" alt="Auto Usado Seguro" class="hero-image img-fluid">
+            </div>
+
+            <div class="col-md-6 hero-text-col">
+                <h1 class="display-5 hero-title-dark">COMPRÁ SEGURO</h1>
+                <p class="lead hero-lead-dark">Conocé el historial real de tu próximo auto usado al instante.</p>
+                
+                <div class="search-box-card">
+                    <form action="{{ url_for('nuevo_pedido') }}" method="GET"> 
+                        <label class="form-label fw-bold mb-2">Ingresá la patente del vehículo</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control form-control-lg text-uppercase text-center fw-bold" placeholder="AA123BB" name="dominio" required style="letter-spacing: 2px;">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-pill">
+                                ¡Obtené tu reporte!
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-pill">
-                        ¡Obtené tu reporte!
-                    </button>
-                </div>
-            </form>
+
+            </div>
         </div>
     </div>
 </section>
@@ -157,7 +200,6 @@
     <div class="row text-center mb-5 mt-5">
         <div class="col-12">
             <h2 class="fw-bold" style="color: #000000 !important;">Elegí el informe a tu medida</h2>
-            <p class="text-muted">Información oficial directo de la base de datos.</p>
         </div>
     </div>
 
@@ -217,28 +259,6 @@
 
     <div class="container py-5 mt-4">
         <h3 class="fw-bold text-center mb-5" style="color: #000 !important;">¿Qué incluye el reporte?</h3>
-        <div class="row g-4 text-center">
-            <div class="col-6 col-md-3">
-                <i class="fas fa-car-crash fa-2x text-primary mb-3"></i>
-                <h6 class="fw-bold text-black">Siniestros</h6>
-                <p class="small text-muted">Chequeo de accidentes previos.</p>
-            </div>
-            <div class="col-6 col-md-3">
-                <i class="fas fa-file-invoice-dollar fa-2x text-primary mb-3"></i>
-                <h6 class="fw-bold text-black">Multas</h6>
-                <p class="small text-muted">Infracciones a nivel nacional.</p>
-            </div>
-            <div class="col-6 col-md-3">
-                <i class="fas fa-gavel fa-2x text-primary mb-3"></i>
-                <h6 class="fw-bold text-black">Legalidad</h6>
-                <p class="small text-muted">Embargos e inhibiciones.</p>
-            </div>
-            <div class="col-6 col-md-3">
-                <i class="fas fa-tachometer-alt fa-2x text-primary mb-3"></i>
-                <h6 class="fw-bold text-black">Kilometraje</h6>
-                <p class="small text-muted">Estimación real de uso.</p>
-            </div>
-        </div>
     </div>
 
 </div>
