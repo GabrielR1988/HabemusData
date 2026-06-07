@@ -1,266 +1,738 @@
 {% extends "base.html" %}
 
-{% block title %}Inicio - HabemusData{% endblock %}
+{% block title %}Comprá Seguro - HabemusData{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ── TOKENS ───────────────────────────────── */
+  :root {
+    --hd-dark:    #080c14;
+    --hd-card:    #0f1521;
+    --hd-border:  #1e2d45;
+    --hd-blue:    #1a6fff;
+    --hd-blue-lt: #4d90ff;
+    --hd-text:    #c8d6f0;
+    --hd-muted:   #5a7095;
+    --hd-bronze:  #CD7F32;
+    --hd-silver:  #8fa0b5;
+    --hd-gold:    #D4AF37;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body:    'DM Sans', sans-serif;
+  }
+
+  body { font-family: var(--font-body); }
+
+  /* ── HERO ─────────────────────────────────── */
+  .hd-hero {
+    background: var(--hd-dark);
+    position: relative;
+    overflow: hidden;
+    padding: 80px 0 60px;
+    min-height: 92vh;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Luz ambiente de fondo */
+  .hd-hero::before {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,111,255,.18) 0%, transparent 70%);
+    top: -200px; right: -100px;
+    pointer-events: none;
+  }
+  .hd-hero::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,111,255,.10) 0%, transparent 70%);
+    bottom: -100px; left: 5%;
+    pointer-events: none;
+  }
+
+  /* Cuadrícula decorativa */
+  .hd-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(26,111,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26,111,255,.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .hd-hero-inner { position: relative; z-index: 2; }
+
+  /* Pill "badge" encima del título */
+  .hd-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(26,111,255,.12);
+    border: 1px solid rgba(26,111,255,.3);
+    color: var(--hd-blue-lt);
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    margin-bottom: 22px;
+  }
+  .hd-pill::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--hd-blue-lt);
+    animation: pulse-dot 1.8s infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: .4; transform: scale(.7); }
+  }
+
+  .hd-title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    line-height: 1;
+    color: #fff;
+    margin-bottom: 10px;
+    letter-spacing: .02em;
+  }
+  .hd-title span { color: var(--hd-blue); }
+
+  .hd-subtitle {
+    font-size: 1.1rem;
+    color: var(--hd-text);
+    max-width: 500px;
+    line-height: 1.6;
+    margin-bottom: 36px;
+  }
+
+  /* ── BUSCADOR ─────────────────────────────── */
+  .hd-search-box {
+    background: var(--hd-card);
+    border: 1px solid var(--hd-border);
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    max-width: 520px;
+  }
+  .hd-search-label {
+    display: block;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--hd-muted);
+    margin-bottom: 10px;
+  }
+  .hd-search-input-wrap {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .hd-search-input {
+    flex: 1;
+    background: rgba(255,255,255,.05) !important;
+    border: 1px solid var(--hd-border) !important;
+    color: #fff !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    letter-spacing: .18em;
+    text-align: center;
+    text-transform: uppercase;
+    border-radius: 10px !important;
+    height: 58px;
+    transition: border-color .2s;
+  }
+  .hd-search-input:focus {
+    border-color: var(--hd-blue) !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(26,111,255,.15) !important;
+    background: rgba(255,255,255,.07) !important;
+  }
+  .hd-search-input::placeholder { color: var(--hd-muted); letter-spacing: .12em; }
+  .hd-search-btn {
+    background: var(--hd-blue);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 700;
+    font-size: .9rem;
+    padding: 0 22px;
+    height: 58px;
+    white-space: nowrap;
+    transition: background .2s, transform .15s;
+    cursor: pointer;
+  }
+  .hd-search-btn:hover { background: var(--hd-blue-lt); transform: translateY(-1px); }
+  .hd-formats {
+    font-size: .78rem;
+    color: var(--hd-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hd-format-badge {
+    font-family: monospace;
+    background: rgba(255,255,255,.06);
+    border: 1px solid var(--hd-border);
+    border-radius: 5px;
+    padding: 2px 8px;
+    color: var(--hd-text);
+    font-size: .8rem;
+  }
+
+  /* Stats rápidos */
+  .hd-stats {
+    display: flex;
+    gap: 28px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+  .hd-stat { display: flex; flex-direction: column; }
+  .hd-stat-num {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: #fff;
+    line-height: 1;
+  }
+  .hd-stat-lbl {
+    font-size: .75rem;
+    color: var(--hd-muted);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .hd-stat-divider {
+    width: 1px;
+    background: var(--hd-border);
+    align-self: stretch;
+  }
+
+  /* Imagen del hero */
+  .hd-hero-img-col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  .hd-hero-img {
+    max-width: 100%;
+    width: 500px;
+    filter: drop-shadow(0 30px 60px rgba(26,111,255,.25));
+    animation: float 5s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-14px); }
+  }
+  /* Anillo decorativo detrás del auto */
+  .hd-hero-ring {
+    position: absolute;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    border: 1px solid rgba(26,111,255,.15);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+  }
+  .hd-hero-ring-2 {
+    position: absolute;
+    width: 550px; height: 550px;
+    border-radius: 50%;
+    border: 1px solid rgba(26,111,255,.07);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+  }
+
+  /* ── COMO FUNCIONA ────────────────────────── */
+  .hd-section { padding: 80px 0; }
+  .hd-section-dark { background: var(--hd-dark); }
+  .hd-section-card { background: #0a1018; }
+
+  .hd-section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: #fff;
+    letter-spacing: .02em;
+    margin-bottom: 6px;
+  }
+  .hd-section-subtitle {
+    color: var(--hd-muted);
+    font-size: .95rem;
+    margin-bottom: 50px;
+  }
+
+  /* Steps */
+  .hd-steps { display: flex; gap: 24px; flex-wrap: wrap; }
+  .hd-step {
+    flex: 1;
+    min-width: 200px;
+    background: var(--hd-card);
+    border: 1px solid var(--hd-border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    position: relative;
+    transition: border-color .25s;
+  }
+  .hd-step:hover { border-color: var(--hd-blue); }
+  .hd-step-num {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    color: rgba(26,111,255,.15);
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .hd-step-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: rgba(26,111,255,.12);
+    border: 1px solid rgba(26,111,255,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    color: var(--hd-blue-lt);
+    margin-bottom: 14px;
+  }
+  .hd-step h5 { color: #fff; font-weight: 700; margin-bottom: 6px; font-size: 1rem; }
+  .hd-step p  { color: var(--hd-muted); font-size: .88rem; margin: 0; line-height: 1.55; }
+
+  /* Línea conectora entre steps */
+  .hd-step-connector {
+    display: flex;
+    align-items: center;
+    color: var(--hd-border);
+    font-size: 1.4rem;
+    margin-top: 28px;
+  }
+
+  /* ── PLANES / PRECIOS ─────────────────────── */
+  .hd-plans { display: flex; gap: 20px; flex-wrap: wrap; align-items: stretch; }
+  .hd-plan {
+    flex: 1;
+    min-width: 220px;
+    background: var(--hd-card);
+    border: 1px solid var(--hd-border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    position: relative;
+    transition: transform .25s, border-color .25s;
+    display: flex;
+    flex-direction: column;
+  }
+  .hd-plan:hover { transform: translateY(-5px); }
+  .hd-plan-bronze { border-top: 3px solid var(--hd-bronze); }
+  .hd-plan-silver { border-top: 3px solid var(--hd-silver); border-color: var(--hd-silver); }
+  .hd-plan-gold   { border-top: 3px solid var(--hd-gold); }
+
+  .hd-plan-popular {
+    position: absolute;
+    top: -13px; left: 50%; transform: translateX(-50%);
+    background: var(--hd-silver);
+    color: #0a1018;
+    font-size: .7rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 4px 16px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .hd-plan-name {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    letter-spacing: .04em;
+    margin-bottom: 4px;
+  }
+  .hd-plan-price {
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    color: #fff;
+    line-height: 1;
+    margin: 14px 0;
+  }
+  .hd-plan-price small { font-size: 1rem; color: var(--hd-muted); }
+  .hd-plan-divider { border: none; border-top: 1px solid var(--hd-border); margin: 18px 0; }
+
+  .hd-plan-features { list-style: none; padding: 0; margin: 0 0 24px; flex: 1; }
+  .hd-plan-features li {
+    font-size: .87rem;
+    color: var(--hd-text);
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .hd-plan-features li i { font-size: .85rem; flex-shrink: 0; }
+  .hd-plan-features .feat-ok i  { color: #4ade80; }
+  .hd-plan-features .feat-no    { color: var(--hd-muted); }
+  .hd-plan-features .feat-no i  { color: var(--hd-muted); }
+
+  .hd-plan-btn {
+    display: block;
+    text-align: center;
+    border-radius: 9px;
+    padding: 13px;
+    font-weight: 700;
+    font-size: .9rem;
+    text-decoration: none;
+    transition: opacity .2s, transform .15s;
+    margin-top: auto;
+  }
+  .hd-plan-btn:hover { opacity: .85; transform: translateY(-1px); }
+  .btn-bronze-fill { background: var(--hd-bronze); color: #fff; }
+  .btn-silver-fill { background: var(--hd-silver); color: #0a1018; }
+  .btn-gold-fill   { background: var(--hd-gold); color: #0a1018; }
+
+  /* Color del nombre del plan */
+  .col-bronze { color: var(--hd-bronze); }
+  .col-silver { color: var(--hd-silver); }
+  .col-gold   { color: var(--hd-gold); }
+
+  /* ── QUÉ INCLUYE (feature grid) ──────────── */
+  .hd-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .hd-feature-item {
+    background: var(--hd-card);
+    border: 1px solid var(--hd-border);
+    border-radius: 12px;
+    padding: 22px 18px;
+    transition: border-color .2s;
+  }
+  .hd-feature-item:hover { border-color: rgba(26,111,255,.4); }
+  .hd-feature-icon {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+    color: var(--hd-blue-lt);
+    display: block;
+  }
+  .hd-feature-item h6 {
+    color: #fff;
+    font-weight: 700;
+    font-size: .92rem;
+    margin-bottom: 4px;
+  }
+  .hd-feature-item p {
+    color: var(--hd-muted);
+    font-size: .8rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ── CTA FINAL ────────────────────────────── */
+  .hd-cta-section {
+    background: var(--hd-dark);
+    padding: 90px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hd-cta-section::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,111,255,.12) 0%, transparent 65%);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+  }
+  .hd-cta-section .container { position: relative; z-index: 1; }
+  .hd-cta-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .hd-cta-sub {
+    color: var(--hd-text);
+    font-size: 1rem;
+    max-width: 440px;
+    margin: 0 auto 34px;
+    line-height: 1.6;
+  }
+  .hd-cta-btn {
+    display: inline-block;
+    background: var(--hd-blue);
+    color: #fff;
+    font-weight: 700;
+    padding: 16px 40px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background .2s, transform .15s;
+  }
+  .hd-cta-btn:hover { background: var(--hd-blue-lt); color: #fff; transform: translateY(-2px); }
+  .hd-cta-link {
+    display: inline-block;
+    color: var(--hd-muted);
+    font-size: .88rem;
+    margin-top: 16px;
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .hd-cta-link:hover { color: var(--hd-text); }
+
+  /* ── RESPONSIVE ───────────────────────────── */
+  @media (max-width: 768px) {
+    .hd-hero { padding: 60px 0 50px; min-height: auto; }
+    .hd-hero-img-col { margin-top: 40px; }
+    .hd-stats { gap: 18px; }
+    .hd-steps, .hd-plans { flex-direction: column; }
+    .hd-plan-silver { margin-top: 0; }
+  }
+</style>
+{% endblock %}
 
 {% block hero %}
-<style>
-    /* 1. SECCIÓN HERO: Fondo Blanco Puro */
-    .hero-section-clean {
-        background-color: #ffffff !important; 
-        padding: 80px 0;
-        color: #212529;
-    }
+<!-- ─────────────── HERO ─────────────── -->
+<section class="hd-hero">
+  <div class="hd-grid-bg"></div>
+  <div class="container hd-hero-inner">
+    <div class="row align-items-center">
 
-    /* 2. ALINEACIÓN DE LA FOTO (Izquierda) */
-    .hero-image {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 0 auto;
-    }
-
-    /* 3. ALINEACIÓN DEL TEXTO (Derecha) */
-    .hero-text-col {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding-left: 50px;
-    }
-
-    @media (max-width: 768px) {
-        .hero-text-col {
-            padding-left: 15px;
-            padding-right: 15px;
-            text-align: center;
-            margin-top: 30px;
-        }
-    }
-
-    .hero-title-dark {
-        color: #1a1d20;
-        font-weight: 800;
-        margin-bottom: 15px;
-    }
-
-    .hero-lead-dark {
-        color: #555;
-        margin-bottom: 30px;
-    }
-
-    /* 4. EL BUSCADOR ORIGINAL (Estilo Tarjeta) */
-    .search-box-card {
-        background: white;
-        border-radius: 8px;
-        padding: 30px;
-        /* Le dejamos una sombra linda para que despegue del fondo blanco */
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
-        max-width: 100%; 
-        color: #333;
-        text-align: left; /* Mantenemos el texto de la etiqueta a la izquierda */
-    }
-</style>
-
-<section class="hero-section-clean">
-    <div class="container">
-        <div class="row align-items-center">
-            
-            <div class="col-md-6 text-center text-md-start">
-                <img src="{{ url_for('static', filename='auto_main5.png') }}" alt="Auto Usado Seguro" class="hero-image img-fluid">
-            </div>
-
-            <div class="col-md-6 hero-text-col">
-                <h1 class="display-5 hero-title-dark">COMPRÁ SEGURO</h1>
-                <p class="lead hero-lead-dark">Conocé el historial real de tu próximo auto usado al instante.</p>
-                
-                <div class="search-box-card">
-                    <form action="{{ url_for('nuevo_pedido') }}" method="GET"> 
-                        <label class="form-label fw-bold mb-2">Ingresá la patente del vehículo</label>
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control form-control-lg text-uppercase text-center fw-bold" placeholder="AA123BB" name="dominio" required style="letter-spacing: 2px;">
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-pill">
-                                ¡Obtené tu reporte!
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-            </div>
+      <!-- Texto + buscador -->
+      <div class="col-lg-6">
+        <div class="hd-pill">
+          <span>Informes de dominio vehicular</span>
         </div>
+
+        <h1 class="hd-title">
+          COMPRÁ<br><span>CON DATOS</span>
+        </h1>
+        <p class="hd-subtitle">
+          Conocé el historial real de tu próximo auto usado en minutos. Multas, deudas, embargos y mucho más.
+        </p>
+
+        <!-- Buscador -->
+        <div class="hd-search-box">
+          <span class="hd-search-label">Ingresá la patente del vehículo</span>
+          <form action="{{ url_for('nuevo_pedido') }}" method="GET">
+            <div class="hd-search-input-wrap">
+              <input
+                type="text"
+                class="form-control hd-search-input"
+                placeholder="AA123BB"
+                name="dominio"
+                maxlength="9"
+                required
+              >
+              <button type="submit" class="hd-search-btn">
+                <i class="fas fa-search me-1"></i> Consultar
+              </button>
+            </div>
+          </form>
+          <div class="hd-formats">
+            <span>Formatos:</span>
+            <span class="hd-format-badge">AAA123</span>
+            <span class="hd-format-badge">AA123BB</span>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="hd-stats">
+          <div class="hd-stat">
+            <span class="hd-stat-num">+500</span>
+            <span class="hd-stat-lbl">Informes emitidos</span>
+          </div>
+          <div class="hd-stat-divider"></div>
+          <div class="hd-stat">
+            <span class="hd-stat-num">3</span>
+            <span class="hd-stat-lbl">Planes disponibles</span>
+          </div>
+          <div class="hd-stat-divider"></div>
+          <div class="hd-stat">
+            <span class="hd-stat-num">24h</span>
+            <span class="hd-stat-lbl">Entrega del informe</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Imagen -->
+      <div class="col-lg-6 hd-hero-img-col d-none d-lg-flex">
+        <div class="hd-hero-ring-2"></div>
+        <div class="hd-hero-ring"></div>
+        <img
+          src="{{ url_for('static', filename='auto_main5.png') }}"
+          alt="Vehículo"
+          class="hd-hero-img"
+        >
+      </div>
+
     </div>
+  </div>
 </section>
 {% endblock %}
 
 {% block content %}
 
-<style>
-    /* --- DEFINICIÓN DE COLORES METÁLICOS --- */
-    :root {
-        --color-bronze: #CD7F32;
-        --color-silver: #7f8c8d; /* Gris metalizado oscuro para que se lea bien */
-        --color-gold: #D4AF37;
-    }
-
-    /* CLASES DE TEXTO METÁLICO */
-    .text-bronze { color: var(--color-bronze) !important; }
-    .text-silver { color: var(--color-silver) !important; }
-    .text-gold   { color: var(--color-gold) !important; }
-
-    /* TARJETAS DE PRECIOS */
-    .price-card {
-        background: white;
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        height: 100%;
-        border-top: 4px solid #ddd; /* Base */
-        position: relative;
-        z-index: 1; 
-    }
-
-    /* ASIGNACIÓN DE BORDES DE COLOR */
-    .card-lite { border-top-color: var(--color-bronze); }
-    .card-full { border-top-color: var(--color-silver); } 
-    .card-premium { border-top-color: var(--color-gold); }
-
-    /* MARCA DE AGUA (Logo de fondo) */
-    .price-card::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background-position: top 10px right 10px; 
-        background-repeat: no-repeat;
-        background-size: 30%; 
-        z-index: 0;
-        border-radius: 8px; 
-    }
-
-    /* IMÁGENES ESPECÍFICAS DE MEDALLAS (Si las subiste) */
-    .card-lite::before { background-image: url('{{ url_for("static", filename="LogoBronce.png") }}'); }
-    .card-full::before { background-image: url('{{ url_for("static", filename="LogoPlata.png") }}'); }
-    .card-premium::before { background-image: url('{{ url_for("static", filename="LogoOro.png") }}'); }
-
-    .price-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 20px rgba(0,0,0,0.1);
-    }
-
-    .price-amount {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #212529;
-    }
-
-    /* --- BOTONES PERSONALIZADOS --- */
-    
-    /* Botón Bronce (Outline) */
-    .btn-bronze {
-        color: var(--color-bronze);
-        border: 2px solid var(--color-bronze);
-        background: transparent;
-    }
-    .btn-bronze:hover {
-        background-color: var(--color-bronze);
-        color: white;
-    }
-
-    /* Botón Plata (Lleno/Sólido) */
-    .btn-silver {
-        background-color: var(--color-silver);
-        border: 2px solid var(--color-silver);
-        color: white;
-    }
-    .btn-silver:hover {
-        background-color: #636e72; /* Un gris un poco más oscuro al pasar el mouse */
-        border-color: #636e72;
-        color: white;
-    }
-
-    /* Botón Oro (Outline) */
-    .btn-gold {
-        color: var(--color-gold);
-        border: 2px solid var(--color-gold);
-        background: transparent;
-    }
-    .btn-gold:hover {
-        background-color: var(--color-gold);
-        color: white;
-    }
-
-
-    /* ICONOS Y LISTAS */
-    .feature-list li { margin-bottom: 10px; font-size: 0.95rem; color: #555; }
-    .feature-list i { color: #28a745; margin-right: 8px; }
-</style>
-
-<div class="simplidata-body pb-5">
-    
-    <div class="row text-center mb-5 mt-5">
-        <div class="col-12">
-            <h2 class="fw-bold" style="color: #000000 !important;">Elegí el informe a tu medida</h2>
-        </div>
+<!-- ─────────────── CÓMO FUNCIONA ─────────────── -->
+<section class="hd-section hd-section-card">
+  <div class="container">
+    <div class="text-center">
+      <h2 class="hd-section-title">¿Cómo funciona?</h2>
+      <p class="hd-section-subtitle">Tres pasos simples para conocer el historial de cualquier vehículo</p>
     </div>
 
-    <div class="row g-4 row-cols-1 row-cols-md-3">
-        
-        <div class="col">
-            <div class="card price-card card-lite p-4">
-                <h4 class="fw-bold text-bronze">Bronce</h4>
-                <div class="my-3">
-                    <span class="price-amount">$3.500</span>
-                </div>
-                <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
-                    <li><i class="fas fa-check"></i> Titularidad</li>
-                    <li><i class="fas fa-check"></i> Modelo y Año</li>
-                    <li class="text-muted"><i class="fas fa-times text-danger"></i> Multas</li>
-                    <li class="text-muted"><i class="fas fa-times text-danger"></i> Deudas Patente</li>
-                </ul>
-                <a href="{{ url_for('registro') }}" class="btn btn-bronze rounded-pill mt-3 w-100 fw-bold">Comprar Ahora</a>
-            </div>
-        </div>
+    <div class="hd-steps">
+      <div class="hd-step">
+        <div class="hd-step-num">01</div>
+        <div class="hd-step-icon"><i class="fas fa-keyboard"></i></div>
+        <h5>Ingresá la patente</h5>
+        <p>Escribí el dominio del vehículo que querés consultar. Soportamos ambos formatos de patente.</p>
+      </div>
 
-        <div class="col">
-            <div class="card price-card card-full p-4 border shadow">
-                <span class="badge position-absolute top-0 start-50 translate-middle rounded-pill px-3" style="background-color: var(--color-silver);">MÁS VENDIDO</span>
-                
-                <h4 class="fw-bold text-silver">Plata</h4>
-                <div class="my-3">
-                    <span class="price-amount">$14.500</span>
-                </div>
-                <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
-                    <li><i class="fas fa-check"></i> <strong>Todo lo del Básico</strong></li>
-                    <li><i class="fas fa-check"></i> Infracciones de Tránsito</li>
-                    <li><i class="fas fa-check"></i> Deudas de Patente</li>
-                    <li><i class="fas fa-check"></i> Embargos / Inhibiciones</li>
-                </ul>
-                <a href="{{ url_for('registro') }}" class="btn btn-silver rounded-pill mt-3 w-100 fw-bold">Comprar Ahora</a>
-            </div>
-        </div>
+      <div class="hd-step">
+        <div class="hd-step-num">02</div>
+        <div class="hd-step-icon"><i class="fas fa-credit-card"></i></div>
+        <h5>Elegí tu plan</h5>
+        <p>Seleccioná el informe que más se adapta a tus necesidades: Bronce, Plata u Oro.</p>
+      </div>
 
-        <div class="col">
-            <div class="card price-card card-premium p-4">
-                <h4 class="fw-bold text-gold">Oro</h4>
-                <div class="my-3">
-                    <span class="price-amount">$24.000</span>
-                </div>
-                <ul class="list-unstyled feature-list text-start mx-auto" style="max-width: 250px;">
-                    <li><i class="fas fa-check"></i> <strong>Informe Completo</strong></li>
-                    <li><i class="fas fa-check"></i> Historial DNRPA Oficial</li>
-                    <li><i class="fas fa-check"></i> Recalls de Fábrica</li>
-                    <li><i class="fas fa-check"></i> Precios de Mercado</li>
-                </ul>
-                <a href="{{ url_for('registro') }}" class="btn btn-gold rounded-pill mt-3 w-100 fw-bold">Comprar Ahora</a>
-            </div>
-        </div>
+      <div class="hd-step">
+        <div class="hd-step-num">03</div>
+        <div class="hd-step-icon"><i class="fas fa-file-pdf"></i></div>
+        <h5>Recibí el informe</h5>
+        <p>Descargá tu informe completo en PDF desde tu panel de usuario, disponible en menos de 24 horas.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
+<!-- ─────────────── PLANES ─────────────── -->
+<section class="hd-section hd-section-dark">
+  <div class="container">
+    <div class="text-center">
+      <h2 class="hd-section-title">Elegí tu plan</h2>
+      <p class="hd-section-subtitle">Información que necesitás, al precio que te conviene</p>
     </div>
 
-    <div class="container py-5 mt-4">
-        <h3 class="fw-bold text-center mb-5" style="color: #000 !important;">¿Qué incluye el reporte?</h3>
+    <div class="hd-plans">
+
+      <!-- Bronce -->
+      <div class="hd-plan hd-plan-bronze">
+        <div class="hd-plan-name col-bronze">Bronce</div>
+        <div style="color: var(--hd-muted); font-size:.82rem;">Consulta esencial</div>
+        <div class="hd-plan-price">$3.500 <small>ARS</small></div>
+        <hr class="hd-plan-divider">
+        <ul class="hd-plan-features">
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Titularidad actual</li>
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Marca, modelo y año</li>
+          <li class="feat-no"><i class="fas fa-times-circle"></i> Multas de tránsito</li>
+          <li class="feat-no"><i class="fas fa-times-circle"></i> Deudas de patente</li>
+          <li class="feat-no"><i class="fas fa-times-circle"></i> Embargos / inhibiciones</li>
+        </ul>
+        <a href="{{ url_for('registro') }}" class="hd-plan-btn btn-bronze-fill">Comprar Ahora</a>
+      </div>
+
+      <!-- Plata (destacado) -->
+      <div class="hd-plan hd-plan-silver">
+        <div class="hd-plan-popular">Más vendido</div>
+        <div class="hd-plan-name col-silver">Plata</div>
+        <div style="color: var(--hd-muted); font-size:.82rem;">El más completo</div>
+        <div class="hd-plan-price">$14.500 <small>ARS</small></div>
+        <hr class="hd-plan-divider">
+        <ul class="hd-plan-features">
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Todo lo del Bronce</li>
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Infracciones de tránsito</li>
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Deudas de patente</li>
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Embargos / inhibiciones</li>
+          <li class="feat-no"><i class="fas fa-times-circle"></i> Historial DNRPA</li>
+        </ul>
+        <a href="{{ url_for('registro') }}" class="hd-plan-btn btn-silver-fill">Comprar Ahora</a>
+      </div>
+
+      <!-- Oro -->
+      <div class="hd-plan hd-plan-gold">
+        <div class="hd-plan-name col-gold">Oro</div>
+        <div style="color: var(--hd-muted); font-size:.82rem;">Informe premium</div>
+        <div class="hd-plan-price">$24.000 <small>ARS</small></div>
+        <hr class="hd-plan-divider">
+        <ul class="hd-plan-features">
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Todo lo del Plata</li>
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Historial DNRPA oficial</li>
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Recalls de fábrica</li>
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Precios de mercado</li>
+          <li class="feat-ok"><i class="fas fa-check-circle"></i> Ficha técnica completa</li>
+        </ul>
+        <a href="{{ url_for('registro') }}" class="hd-plan-btn btn-gold-fill">Comprar Ahora</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── QUÉ INCLUYE ─────────────── -->
+<section class="hd-section hd-section-card">
+  <div class="container">
+    <div class="text-center">
+      <h2 class="hd-section-title">¿Qué información obtenés?</h2>
+      <p class="hd-section-subtitle">Datos reales de múltiples fuentes oficiales, en un solo informe</p>
     </div>
 
-</div>
+    <div class="hd-feature-grid">
+      <div class="hd-feature-item">
+        <span class="hd-feature-icon"><i class="fas fa-id-card"></i></span>
+        <h6>Titularidad</h6>
+        <p>Nombre del titular registral actual y domicilio de radicación.</p>
+      </div>
+      <div class="hd-feature-item">
+        <span class="hd-feature-icon"><i class="fas fa-car"></i></span>
+        <h6>Ficha técnica</h6>
+        <p>Marca, modelo, versión, año, motor y características del vehículo.</p>
+      </div>
+      <div class="hd-feature-item">
+        <span class="hd-feature-icon"><i class="fas fa-exclamation-triangle"></i></span>
+        <h6>Infracciones</h6>
+        <p>Multas de tránsito reportadas a nivel nacional y provincial.</p>
+      </div>
+      <div class="hd-feature-item">
+        <span class="hd-feature-icon"><i class="fas fa-dollar-sign"></i></span>
+        <h6>Deudas de patente</h6>
+        <p>Períodos impagos del impuesto automotor provincial.</p>
+      </div>
+      <div class="hd-feature-item">
+        <span class="hd-feature-icon"><i class="fas fa-gavel"></i></span>
+        <h6>Embargos</h6>
+        <p>Inhibiciones y prendas registradas sobre el vehículo.</p>
+      </div>
+      <div class="hd-feature-item">
+        <span class="hd-feature-icon"><i class="fas fa-history"></i></span>
+        <h6>Historial DNRPA</h6>
+        <p>Todos los titulares anteriores según el registro automotor oficial.</p>
+      </div>
+      <div class="hd-feature-item">
+        <span class="hd-feature-icon"><i class="fas fa-tools"></i></span>
+        <h6>Recalls de fábrica</h6>
+        <p>Llamados a revisión técnica emitidos por las terminales automotrices.</p>
+      </div>
+      <div class="hd-feature-item">
+        <span class="hd-feature-icon"><i class="fas fa-chart-line"></i></span>
+        <h6>Precio de mercado</h6>
+        <p>Valor estimado del vehículo según referencias de mercado actualizadas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── CTA FINAL ─────────────── -->
+<section class="hd-cta-section">
+  <div class="container">
+    <h2 class="hd-cta-title">¿LISTO PARA COMPRAR SEGURO?</h2>
+    <p class="hd-cta-sub">
+      Ingresá la patente y conocé toda la información del vehículo antes de comprarlo.
+    </p>
+    <a href="{{ url_for('registro') }}" class="hd-cta-btn">
+      <i class="fas fa-shield-alt me-2"></i> Empezar ahora
+    </a>
+    <br>
+    <a href="{{ url_for('login') }}" class="hd-cta-link">Ya tengo cuenta → Iniciar sesión</a>
+  </div>
+</section>
 
 {% endblock %}

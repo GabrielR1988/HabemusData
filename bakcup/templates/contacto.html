@@ -1,0 +1,49 @@
+<!-- Contiene el formulario de contacto -->
+{% extends 'base.html' %}
+
+{% block title %}Contacto{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Contacto</h2>
+    {% if enviado %}
+        <div class="alert alert-success">¡Mensaje enviado correctamente!</div>
+    {% else %}
+        <form method="POST" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" name="nombre" id="nombre" class="form-control" required>
+                <div class="invalid-feedback">Por favor, ingresá tu nombre.</div>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico</label>
+                <input type="email" name="email" id="email" class="form-control" required>
+                <div class="invalid-feedback">Por favor, ingresá un correo válido.</div>
+            </div>
+            <div class="mb-3">
+                <label for="texto" class="form-label">Mensaje</label>
+                <textarea name="texto" id="texto" class="form-control" rows="5" required></textarea>
+                <div class="invalid-feedback">Por favor, ingresá tu mensaje.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+        </form>
+    {% endif %}
+</div>
+
+<script>
+    // Validación Bootstrap
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+{% endblock %}

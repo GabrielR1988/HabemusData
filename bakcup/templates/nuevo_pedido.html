@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Pedido - HabemusData{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-75 py-5">
+    <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        
+        <div class="card card-custom border-0 shadow-lg">
+            <div class="card-body p-5 text-center">
+                
+                <div class="mb-4 text-primary">
+                    <i class="fas fa-search-location fa-4x"></i>
+                </div>
+
+                <h2 class="fw-bold text-white mb-3">Consultar Dominio</h2>
+                <p class="text-white-50 mb-4">
+                    Ingresá la patente del vehículo para solicitar el informe completo (historial, multas, deudas).
+                </p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show text-start" role="alert">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('nuevo_pedido') }}">
+                    
+                    <div class="form-floating mb-4">
+                        <input type="text" 
+                               class="form-control form-control-dark text-uppercase fs-4 fw-bold text-center letter-spacing-1" 
+                               id="dominio" 
+                               name="dominio" 
+                               placeholder=" " 
+                               maxlength="9"
+                               required 
+                               autofocus>
+                        <label for="dominio" class="text-center w-100">Ingresá la Patente</label>
+                    </div>
+
+                    <div class="mb-4 text-white-50 small">
+                        <i class="fas fa-info-circle me-1"></i> Formatos aceptados: <br>
+                        <span class="badge bg-dark border border-secondary text-secondary me-1">AAA123</span>
+                        <span class="badge bg-dark border border-secondary text-secondary">AA123BB</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold py-3">
+                            <i class="fas fa-paper-plane me-2"></i>Solicitar Informe
+                        </button>
+                        
+                        <a href="{{ url_for('panel') }}" class="btn btn-outline-light rounded-pill mt-2">
+                            Cancelar y volver
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

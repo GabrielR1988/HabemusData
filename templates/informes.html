@@ -1,34 +1,103 @@
 {% extends 'base.html' %}
-
-{% block title %}Informes{% endblock %}
+{% block title %}Gestión de Informes - HabemusData{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Informes pendientes</h2>
+<div class="py-4">
 
-    {% if pedidos %}
-        <div class="list-group mt-4">
-            {% for pedido in pedidos %}
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">Pedido #{{ pedido.id }}</h5>
-                        <small>Cliente: {{ pedido.cliente_nombre }}</small><br>
-                        <small>Fecha: {{ pedido.fecha_pedido.strftime('%Y-%m-%d %H:%M') }}</small><br>
-                        <small>Estado: {{ pedido.estado }}</small>
-                    </div>
-                    <div>
-                        <form action="{{ url_for('actualizar_estado', pedido_id=pedido.id) }}" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-success btn-sm">En proceso</button>
-                        </form>
-                        <form action="{{ url_for('terminar', pedido_id=pedido.id) }}" method="POST" class="d-inline">
-                            <button type="submit" class="btn btn-primary btn-sm">Terminar</button>
-                        </form>
-                    </div>
-                </div>
-            {% endfor %}
+  <div class="hd-page-header">
+    <h1 class="hd-page-title">GESTIÓN DE INFORMES</h1>
+    <p class="hd-page-sub">Pedidos pendientes de procesamiento</p>
+  </div>
+
+  {% if pedidos %}
+    <div class="hd-card">
+      <div class="hd-card-body">
+
+        <!-- Contador -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <span style="font-size:.78rem;color:var(--hd-muted);">
+            <i class="fas fa-list me-1"></i>
+            {{ pedidos|length }} pedido{{ 's' if pedidos|length != 1 else '' }} pendiente{{ 's' if pedidos|length != 1 else '' }}
+          </span>
         </div>
-    {% else %}
-        <p class="text-muted">No hay pedidos pendientes por el momento.</p>
-    {% endif %}
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          {% for pedido in pedidos %}
+          <div style="
+            background:var(--hd-card-2);
+            border:1px solid var(--hd-border);
+            border-left:3px solid
+              {% if pedido.estado == 'En proceso' %}var(--hd-blue)
+              {% else %}var(--hd-gold){% endif %};
+            border-radius:var(--radius-md);
+            padding:18px 20px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            flex-wrap:wrap;
+            gap:14px;
+          ">
+            <!-- Info izquierda -->
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+              <div style="
+                width:42px;height:42px;border-radius:9px;
+                background:var(--hd-blue-dim);
+                border:1px solid rgba(26,111,255,.2);
+                display:flex;align-items:center;justify-content:center;
+                color:var(--hd-blue-lt);font-size:.95rem;
+                flex-shrink:0;
+              "><i class="fas fa-car"></i></div>
+
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:3px;">
+                  <span style="font-family:'Courier New',monospace;font-size:1.1rem;font-weight:700;letter-spacing:.12em;color:var(--hd-white);">
+                    {{ pedido.dominio }}
+                  </span>
+                  <span style="font-size:.72rem;color:var(--hd-muted);">· Pedido #{{ pedido.id }}</span>
+                </div>
+                <div style="font-size:.8rem;color:var(--hd-muted);display:flex;gap:14px;flex-wrap:wrap;">
+                  <span><i class="fas fa-user me-1"></i> {{ pedido.cliente_nombre }}</span>
+                  <span><i class="fas fa-calendar me-1"></i> {{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Acciones derecha -->
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              {% if pedido.estado == 'En espera' %}
+                <span class="hd-badge hd-badge-warning"><i class="fas fa-clock"></i> En espera</span>
+              {% elif pedido.estado == 'En proceso' %}
+                <span class="hd-badge hd-badge-primary"><i class="fas fa-spinner"></i> En proceso</span>
+              {% endif %}
+
+              <form action="{{ url_for('actualizar_estado', pedido_id=pedido.id) }}" method="POST" style="margin:0;">
+                <button type="submit" class="hd-btn-ghost" style="padding:7px 14px;font-size:.82rem;">
+                  <i class="fas fa-play me-1"></i> En proceso
+                </button>
+              </form>
+
+              <form action="{{ url_for('terminar', pedido_id=pedido.id) }}" method="POST" style="margin:0;">
+                <button type="submit" class="hd-btn-primary" style="padding:7px 16px;font-size:.82rem;border-radius:var(--radius-sm);">
+                  <i class="fas fa-check me-1"></i> Terminar
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+
+  {% else %}
+    <div class="hd-card">
+      <div class="hd-card-body" style="text-align:center;padding:60px;">
+        <i class="fas fa-check-circle" style="font-size:2.5rem;color:#4ade80;margin-bottom:16px;display:block;"></i>
+        <h5 style="color:var(--hd-white);margin-bottom:6px;">Todo al día</h5>
+        <p style="color:var(--hd-muted);font-size:.88rem;margin:0;">No hay pedidos pendientes por el momento.</p>
+      </div>
+    </div>
+  {% endif %}
+
 </div>
 {% endblock %}

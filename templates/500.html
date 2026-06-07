@@ -1,8 +1,29 @@
 {% extends "base.html" %}
+{% block title %}Error del servidor - HabemusData{% endblock %}
+
 {% block content %}
-  <div class="text-center mt-5">
-    <h1>😵 Error 500</h1>
-    <p>Algo salió mal. Estamos trabajando para solucionarlo.</p>
-    <a href="{{ url_for('inicio') }}" class="btn btn-primary">Volver al inicio</a>
+<div class="min-vh-fill py-5" style="text-align:center;">
+  <div>
+    <div style="
+      font-family:var(--font-display);
+      font-size:clamp(7rem, 20vw, 12rem);
+      line-height:1;
+      color:transparent;
+      -webkit-text-stroke:2px rgba(248,113,113,.3);
+      margin-bottom:8px;
+      user-select:none;
+    ">500</div>
+
+    <h2 style="font-family:var(--font-display);font-size:1.8rem;color:var(--hd-white);letter-spacing:.04em;margin-bottom:10px;">
+      ERROR INTERNO
+    </h2>
+    <p style="color:var(--hd-muted);font-size:.92rem;max-width:380px;margin:0 auto 32px;line-height:1.6;">
+      Algo salió mal de nuestro lado. Estamos trabajando para solucionarlo. Intentá de nuevo en unos minutos.
+    </p>
+
+    <a href="{{ url_for('inicio') }}" class="hd-btn-primary" style="border-radius:999px;padding:13px 28px;">
+      <i class="fas fa-home me-2"></i> Volver al inicio
+    </a>
   </div>
+</div>
 {% endblock %}

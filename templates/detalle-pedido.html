@@ -1,24 +1,148 @@
 {% extends 'base.html' %}
-
-{% block title %}Detalle del Pedido{% endblock %}
+{% block title %}Detalle del Pedido #{{ pedido.id }} - HabemusData{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Detalle del Pedido</h2>
+<div class="py-4">
 
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5 class="card-title">Cliente: {{ pedido.cliente_nombre }}</h5>
-            <p><strong>Dominio:</strong> {{ pedido.dominio }}</p>
-            <p><strong>Fecha del Pedido:</strong> {{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}</p>
-            <p><strong>Estado:</strong> {{ pedido.estado }}</p>
-            <p><strong>Descripción:</strong> {{ pedido.descripcion_informe or 'No hay descripción' }}</p>
+  <!-- Encabezado -->
+  <div class="hd-page-header">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+      <a href="{{ url_for('panel') }}" style="color:var(--hd-muted);text-decoration:none;font-size:.85rem;transition:color .2s;"
+         onmouseover="this.style.color='var(--hd-white)'" onmouseout="this.style.color='var(--hd-muted)'">
+        <i class="fas fa-arrow-left me-1"></i> Volver al panel
+      </a>
+    </div>
+    <h1 class="hd-page-title">PEDIDO <span style="color:var(--hd-blue);">#{{ pedido.id }}</span></h1>
+    <p class="hd-page-sub">Detalle completo del informe solicitado</p>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Info del pedido -->
+    <div class="col-lg-8">
+      <div class="hd-card h-100">
+        <div class="hd-card-body">
+          <p style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hd-muted);margin-bottom:20px;">
+            Información del pedido
+          </p>
+
+          <!-- Patente grande -->
+          <div style="
+            background:var(--hd-card-2);
+            border:1px solid var(--hd-border);
+            border-radius:var(--radius-md);
+            padding:20px 24px;
+            margin-bottom:24px;
+            display:flex;align-items:center;gap:16px;
+          ">
+            <div style="
+              width:48px;height:48px;border-radius:10px;
+              background:var(--hd-blue-dim);
+              border:1px solid rgba(26,111,255,.2);
+              display:flex;align-items:center;justify-content:center;
+              color:var(--hd-blue-lt);font-size:1.1rem;
+              flex-shrink:0;
+            "><i class="fas fa-car"></i></div>
+            <div>
+              <span style="font-size:.75rem;color:var(--hd-muted);display:block;margin-bottom:2px;">Dominio</span>
+              <span style="font-family:'Courier New',monospace;font-size:1.8rem;font-weight:700;letter-spacing:.15em;color:var(--hd-white);">
+                {{ pedido.dominio }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Campos -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+            <div style="background:var(--hd-card-2);border:1px solid var(--hd-border);border-radius:var(--radius-md);padding:16px;">
+              <span style="font-size:.72rem;color:var(--hd-muted);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:4px;">Cliente</span>
+              <span style="color:var(--hd-white);font-weight:600;font-size:.95rem;">{{ pedido.cliente_nombre }}</span>
+            </div>
+
+            <div style="background:var(--hd-card-2);border:1px solid var(--hd-border);border-radius:var(--radius-md);padding:16px;">
+              <span style="font-size:.72rem;color:var(--hd-muted);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:4px;">Fecha del pedido</span>
+              <span style="color:var(--hd-white);font-weight:600;font-size:.95rem;">{{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}</span>
+            </div>
+
+            <div style="background:var(--hd-card-2);border:1px solid var(--hd-border);border-radius:var(--radius-md);padding:16px;">
+              <span style="font-size:.72rem;color:var(--hd-muted);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;">Estado</span>
+              {% if pedido.estado == 'Terminado' %}
+                <span class="hd-badge hd-badge-success"><i class="fas fa-check-circle"></i> Terminado</span>
+              {% elif pedido.estado == 'En proceso' %}
+                <span class="hd-badge hd-badge-primary"><i class="fas fa-spinner"></i> En proceso</span>
+              {% else %}
+                <span class="hd-badge hd-badge-warning"><i class="fas fa-clock"></i> En espera</span>
+              {% endif %}
+            </div>
+
+            <div style="background:var(--hd-card-2);border:1px solid var(--hd-border);border-radius:var(--radius-md);padding:16px;">
+              <span style="font-size:.72rem;color:var(--hd-muted);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:4px;">Informe PDF</span>
+              {% if pedido.url_pdf %}
+                <a href="{{ pedido.url_pdf }}" target="_blank" style="color:var(--hd-blue-lt);font-size:.88rem;font-weight:600;text-decoration:none;">
+                  <i class="fas fa-external-link-alt me-1"></i> Ver informe
+                </a>
+              {% else %}
+                <span style="color:var(--hd-muted);font-size:.85rem;font-style:italic;">Aún no disponible</span>
+              {% endif %}
+            </div>
+
+          </div>
+
+          {% if pedido.descripcion_informe %}
+          <div style="background:var(--hd-card-2);border:1px solid var(--hd-border);border-radius:var(--radius-md);padding:16px;margin-top:16px;">
+            <span style="font-size:.72rem;color:var(--hd-muted);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;">Descripción</span>
+            <p style="color:var(--hd-text);font-size:.9rem;margin:0;line-height:1.6;">{{ pedido.descripcion_informe }}</p>
+          </div>
+          {% endif %}
+
         </div>
+      </div>
     </div>
 
-    <form method="POST" action="{{ url_for('eliminar_pedido', id=pedido.id) }}" class="mt-3">
-        <button type="submit" class="btn btn-danger">Eliminar Pedido</button>
-        <a href="{{ url_for('panel') }}" class="btn btn-secondary">Volver</a>
-    </form>
+    <!-- Acciones -->
+    <div class="col-lg-4">
+      <div class="hd-card">
+        <div class="hd-card-body">
+          <p style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hd-muted);margin-bottom:20px;">
+            Acciones
+          </p>
+
+          {% if pedido.url_pdf %}
+            <a href="{{ url_for('descargar_informe', id=pedido.id) }}"
+               class="hd-btn-primary w-100 text-center mb-3"
+               style="border-radius:var(--radius-sm);padding:13px;display:block;">
+              <i class="fas fa-download me-2"></i> Descargar PDF
+            </a>
+            <a href="{{ pedido.url_pdf }}" target="_blank"
+               class="hd-btn-ghost w-100 text-center mb-3"
+               style="border-radius:var(--radius-sm);padding:13px;display:block;">
+              <i class="fas fa-eye me-2"></i> Ver online
+            </a>
+          {% endif %}
+
+          <a href="{{ url_for('panel') }}"
+             class="hd-btn-ghost w-100 text-center mb-4"
+             style="border-radius:var(--radius-sm);padding:13px;display:block;">
+            <i class="fas fa-arrow-left me-2"></i> Volver al panel
+          </a>
+
+          <!-- Zona peligrosa -->
+          <div style="border-top:1px solid var(--hd-border);padding-top:20px;">
+            <p style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f87171;margin-bottom:12px;">
+              Zona peligrosa
+            </p>
+            <form method="POST" action="{{ url_for('eliminar_pedido', id=pedido.id) }}"
+                  onsubmit="return confirm('¿Estás seguro que querés eliminar este pedido? Esta acción no se puede deshacer.')">
+              <button type="submit" class="hd-btn-danger w-100 text-center" style="border-radius:var(--radius-sm);padding:11px;">
+                <i class="fas fa-trash me-2"></i> Eliminar pedido
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 {% endblock %}

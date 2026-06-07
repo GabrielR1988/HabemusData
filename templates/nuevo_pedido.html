@@ -1,70 +1,110 @@
 {% extends 'base.html' %}
-
 {% block title %}Nuevo Pedido - HabemusData{% endblock %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center min-vh-75 py-5">
-    <div class="col-12 col-md-8 col-lg-6 col-xl-5">
-        
-        <div class="card card-custom border-0 shadow-lg">
-            <div class="card-body p-5 text-center">
-                
-                <div class="mb-4 text-primary">
-                    <i class="fas fa-search-location fa-4x"></i>
-                </div>
+<div class="min-vh-fill py-5">
+  <div class="row justify-content-center w-100">
+    <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
 
-                <h2 class="fw-bold text-white mb-3">Consultar Dominio</h2>
-                <p class="text-white-50 mb-4">
-                    Ingresá la patente del vehículo para solicitar el informe completo (historial, multas, deudas).
-                </p>
-
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                  {% if messages %}
-                    {% for category, message in messages %}
-                      <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show text-start" role="alert">
-                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                      </div>
-                    {% endfor %}
-                  {% endif %}
-                {% endwith %}
-
-                <form method="POST" action="{{ url_for('nuevo_pedido') }}">
-                    
-                    <div class="form-floating mb-4">
-                        <input type="text" 
-                               class="form-control form-control-dark text-uppercase fs-4 fw-bold text-center letter-spacing-1" 
-                               id="dominio" 
-                               name="dominio" 
-                               placeholder=" " 
-                               maxlength="9"
-                               required 
-                               autofocus>
-                        <label for="dominio" class="text-center w-100">Ingresá la Patente</label>
-                    </div>
-
-                    <div class="mb-4 text-white-50 small">
-                        <i class="fas fa-info-circle me-1"></i> Formatos aceptados: <br>
-                        <span class="badge bg-dark border border-secondary text-secondary me-1">AAA123</span>
-                        <span class="badge bg-dark border border-secondary text-secondary">AA123BB</span>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold py-3">
-                            <i class="fas fa-paper-plane me-2"></i>Solicitar Informe
-                        </button>
-                        
-                        <a href="{{ url_for('panel') }}" class="btn btn-outline-light rounded-pill mt-2">
-                            Cancelar y volver
-                        </a>
-                    </div>
-
-                </form>
-
-            </div>
+      <div class="text-center mb-4">
+        <div style="
+          width:60px;height:60px;border-radius:50%;
+          background:var(--hd-blue-dim);
+          border:1px solid rgba(26,111,255,.25);
+          display:inline-flex;align-items:center;justify-content:center;
+          font-size:1.4rem;color:var(--hd-blue-lt);
+          margin-bottom:16px;
+        ">
+          <i class="fas fa-search"></i>
         </div>
+        <p class="hd-footer-col-title mb-1">Consulta vehicular</p>
+        <h1 style="font-family:var(--font-display);font-size:2.2rem;color:var(--hd-white);letter-spacing:.03em;margin:0;">
+          INGRESÁ LA PATENTE
+        </h1>
+      </div>
+
+      <div class="hd-card">
+        <div class="hd-card-body">
+
+          <p style="color:var(--hd-muted);font-size:.88rem;text-align:center;margin-bottom:24px;line-height:1.6;">
+            Ingresá el dominio del vehículo para solicitar el informe de historial, multas y deudas.
+          </p>
+
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show mb-4" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          <form method="POST" action="{{ url_for('nuevo_pedido') }}">
+
+            <div class="mb-2">
+              <input
+                type="text"
+                class="form-control hd-input"
+                id="dominio"
+                name="dominio"
+                placeholder="AA123BB"
+                maxlength="9"
+                required
+                autofocus
+                style="
+                  text-align:center;
+                  text-transform:uppercase;
+                  font-size:2rem;
+                  font-weight:700;
+                  letter-spacing:.2em;
+                  height:72px;
+                  border-radius:var(--radius-md) !important;
+                "
+              >
+            </div>
+
+            <!-- Formatos aceptados -->
+            <div style="display:flex;justify-content:center;gap:8px;margin-bottom:28px;flex-wrap:wrap;">
+              <span style="font-size:.75rem;color:var(--hd-muted);margin-right:4px;align-self:center;">Formatos:</span>
+              <span style="
+                font-family:monospace;font-size:.8rem;
+                background:rgba(255,255,255,.04);
+                border:1px solid var(--hd-border);
+                border-radius:5px;padding:3px 10px;
+                color:var(--hd-text);
+              ">AAA123</span>
+              <span style="
+                font-family:monospace;font-size:.8rem;
+                background:rgba(255,255,255,.04);
+                border:1px solid var(--hd-border);
+                border-radius:5px;padding:3px 10px;
+                color:var(--hd-text);
+              ">AA123BB</span>
+            </div>
+
+            <button type="submit" class="hd-btn-primary w-100 text-center" style="border-radius:999px;padding:14px;font-size:1rem;">
+              <i class="fas fa-paper-plane me-2"></i> Solicitar Informe
+            </button>
+
+            <a href="{{ url_for('panel') }}" class="hd-btn-ghost w-100 text-center mt-2" style="border-radius:999px;padding:13px;">
+              Cancelar y volver
+            </a>
+
+          </form>
+        </div>
+      </div>
 
     </div>
+  </div>
 </div>
+
+{% block scripts %}
+<script>
+  /* Forzar mayúsculas en tiempo real */
+  var d = document.getElementById('dominio');
+  if (d) d.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+</script>
+{% endblock %}
 {% endblock %}

@@ -1,0 +1,12 @@
+<!--Contiene el contenido de la página 404 (no encontrada)-->
+{% extends 'base.html' %}
+
+{% block title %}Página no encontrada{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h1 class="display-4 text-danger">404</h1>
+    <p class="lead">La página que estás buscando no existe o ha sido eliminada.</p>
+    <a href="{{ url_for('panel') }}" class="btn btn-primary mt-3">Volver al panel</a>
+</div>
+{% endblock %}

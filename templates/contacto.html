@@ -1,49 +1,126 @@
-<!-- Contiene el formulario de contacto -->
 {% extends 'base.html' %}
-
-{% block title %}Contacto{% endblock %}
+{% block title %}Contacto - HabemusData{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Contacto</h2>
-    {% if enviado %}
-        <div class="alert alert-success">¡Mensaje enviado correctamente!</div>
-    {% else %}
-        <form method="POST" class="needs-validation" novalidate>
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre</label>
-                <input type="text" name="nombre" id="nombre" class="form-control" required>
-                <div class="invalid-feedback">Por favor, ingresá tu nombre.</div>
+<div class="py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+
+      <div class="text-center mb-4">
+        <p class="hd-footer-col-title mb-1">¿Necesitás ayuda?</p>
+        <h1 style="font-family:var(--font-display);font-size:2.4rem;color:var(--hd-white);letter-spacing:.03em;margin:0;">
+          CONTACTANOS
+        </h1>
+      </div>
+
+      {% if enviado %}
+        <!-- Éxito -->
+        <div class="hd-card" style="text-align:center;">
+          <div class="hd-card-body" style="padding:50px 32px;">
+            <div style="
+              width:64px;height:64px;border-radius:50%;
+              background:rgba(74,222,128,.1);
+              border:1px solid rgba(74,222,128,.2);
+              display:inline-flex;align-items:center;justify-content:center;
+              font-size:1.6rem;color:#4ade80;
+              margin-bottom:20px;
+            ">
+              <i class="fas fa-check"></i>
             </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Correo Electrónico</label>
-                <input type="email" name="email" id="email" class="form-control" required>
-                <div class="invalid-feedback">Por favor, ingresá un correo válido.</div>
+            <h4 style="color:var(--hd-white);margin-bottom:8px;">¡Mensaje enviado!</h4>
+            <p style="color:var(--hd-muted);font-size:.9rem;margin-bottom:24px;">
+              Recibimos tu consulta y te responderemos a la brevedad.
+            </p>
+            <a href="{{ url_for('inicio') }}" class="hd-btn-primary" style="border-radius:999px;padding:12px 28px;">
+              Volver al inicio
+            </a>
+          </div>
+        </div>
+
+      {% else %}
+        <!-- Formulario -->
+        <div class="hd-card">
+          <div class="hd-card-body">
+            <form method="POST" class="needs-validation" novalidate>
+
+              <div class="mb-3">
+                <label class="hd-field-label">Nombre</label>
+                <input type="text" name="nombre" id="nombre" class="form-control hd-input" placeholder="Tu nombre completo" required>
+                <div class="invalid-feedback" style="color:#f87171;font-size:.78rem;">Por favor, ingresá tu nombre.</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="hd-field-label">Correo Electrónico</label>
+                <input type="email" name="email" id="email" class="form-control hd-input" placeholder="tu@email.com" required>
+                <div class="invalid-feedback" style="color:#f87171;font-size:.78rem;">Por favor, ingresá un correo válido.</div>
+              </div>
+
+              <div class="mb-4">
+                <label class="hd-field-label">Mensaje</label>
+                <textarea name="texto" id="texto" class="form-control hd-input" rows="5"
+                          placeholder="Contanos en qué podemos ayudarte..." required
+                          style="resize:vertical;"></textarea>
+                <div class="invalid-feedback" style="color:#f87171;font-size:.78rem;">Por favor, ingresá tu mensaje.</div>
+              </div>
+
+              <button type="submit" class="hd-btn-primary w-100 text-center" style="border-radius:999px;padding:14px;font-size:.95rem;">
+                <i class="fas fa-paper-plane me-2"></i> Enviar Mensaje
+              </button>
+
+            </form>
+          </div>
+        </div>
+
+        <!-- Info de contacto directo -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+          <div class="hd-card" style="text-align:center;">
+            <div style="padding:20px 16px;">
+              <i class="fas fa-envelope" style="color:var(--hd-blue-lt);font-size:1.2rem;margin-bottom:8px;display:block;"></i>
+              <span style="font-size:.78rem;color:var(--hd-muted);display:block;margin-bottom:2px;">Email</span>
+              <span style="font-size:.82rem;color:var(--hd-text);">info@habemusdata.com.ar</span>
             </div>
-            <div class="mb-3">
-                <label for="texto" class="form-label">Mensaje</label>
-                <textarea name="texto" id="texto" class="form-control" rows="5" required></textarea>
-                <div class="invalid-feedback">Por favor, ingresá tu mensaje.</div>
+          </div>
+          <div class="hd-card" style="text-align:center;">
+            <div style="padding:20px 16px;">
+              <i class="fas fa-map-marker-alt" style="color:var(--hd-blue-lt);font-size:1.2rem;margin-bottom:8px;display:block;"></i>
+              <span style="font-size:.78rem;color:var(--hd-muted);display:block;margin-bottom:2px;">Ubicación</span>
+              <span style="font-size:.82rem;color:var(--hd-text);">Buenos Aires, Argentina</span>
             </div>
-            <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
-        </form>
-    {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
 </div>
 
+<style>
+  .hd-field-label {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--hd-muted);
+    display: block;
+    margin-bottom: 7px;
+  }
+</style>
+
+{% block scripts %}
 <script>
-    // Validación Bootstrap
-    (function () {
-        'use strict'
-        var forms = document.querySelectorAll('.needs-validation')
-        Array.prototype.slice.call(forms).forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                }
-                form.classList.add('was-validated')
-            }, false)
-        })
-    })()
+  (function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+  })()
 </script>
+{% endblock %}
 {% endblock %}

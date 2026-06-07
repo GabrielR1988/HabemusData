@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Panel - HabemusData{% endblock %}
+
+{% block content %}
+<div class="container py-4 min-vh-75">
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+        <div class="mb-3 mb-md-0">
+            <h2 class="fw-bold text-white mb-0">Mis Pedidos</h2>
+            <p class="text-white-50 mb-0">Hola, <span class="text-primary fw-bold">{{ usuario.nombre }}</span>. Gestioná tus informes acá.</p>
+        </div>
+        <a href="{{ url_for('nuevo_pedido') }}" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
+            <i class="fas fa-plus-circle me-2"></i>Nuevo Pedido
+        </a>
+    </div>
+
+    <div class="card card-custom border-0 shadow-lg">
+        <div class="card-body p-4">
+            
+            <form method="get" class="row g-3 align-items-center mb-4">
+                <div class="col-md-6 col-lg-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-search"></i></span>
+                        <input type="text" name="buscar" class="form-control form-control-dark" placeholder=" " value="{{ busqueda or '' }}">
+                        <button type="submit" class="btn btn-outline-primary">Buscar</button>
+                    </div>
+                </div>
+                {% if busqueda %}
+                <div class="col-auto">
+                    <a href="{{ url_for('panel') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Limpiar filtro
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+
+            {% if pedidos %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle custom-table">
+                        <thead>
+                            <tr class="text-secondary text-uppercase small">
+                                <th scope="col">ID</th>
+                                <th scope="col">Patente</th>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col" class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pedido in pedidos %}
+                                <tr>
+                                    <td class="text-white-50">#{{ pedido.id }}</td>
+                                    
+                                    <td>
+                                        <span class="fw-bold text-white letter-spacing-1">{{ pedido.dominio }}</span>
+                                    </td>
+                                    
+                                    <td class="text-white-50">{{ pedido.fecha_pedido.strftime('%d/%m/%Y') }}</td>
+                                    
+                                    <td>
+                                        {% if pedido.estado == 'Terminado' %}
+                                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success">
+                                                <i class="fas fa-check-circle me-1"></i>Terminado
+                                            </span>
+                                        {% elif pedido.estado == 'En proceso' %}
+                                            <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary border border-primary">
+                                                <i class="fas fa-spinner me-1"></i>Procesando
+                                            </span>
+                                        {% else %}
+                                            <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning border border-warning">
+                                                <i class="fas fa-clock me-1"></i>En espera
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    
+                                    <td class="text-end">
+                                        {% if pedido.url_pdf %}
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ pedido.url_pdf }}" target="_blank" class="btn btn-sm btn-outline-light" title="Ver Online">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('descargar_informe', id=pedido.id) }}" class="btn btn-sm btn-outline-success" title="Descargar PDF">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted small fst-italic">Procesando...</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-3 text-secondary">
+                        <i class="fas fa-folder-open fa-3x"></i>
+                    </div>
+                    <h5 class="text-white">No se encontraron pedidos</h5>
+                    <p class="text-white-50">Realizá tu primera consulta ahora mismo.</p>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center pagination-dark">
+            {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('panel', page=pagination.prev_num) }}">Anterior</a>
+                </li>
+            {% endif %}
+            
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('panel', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('panel', page=pagination.next_num) }}">Siguiente</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}
