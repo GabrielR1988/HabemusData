@@ -128,6 +128,8 @@ migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+login_manager.login_message = ''
+login_manager.login_message_category = 'info'
 
 # Definimos un usuario simple (en un entorno real se haría con base de datos)
 class User(UserMixin):
@@ -400,6 +402,14 @@ def descargar_informe(id):
 @app.route('/robots.txt')
 def robots_txt():
     return send_from_directory(app.root_path, 'robots.txt', mimetype='text/plain')
+
+@app.route('/terminos')
+def terminos():
+    return render_template('terminos.html')
+
+@app.route('/privacidad')
+def privacidad():
+    return render_template('privacidad.html')
 
 if __name__ == '__main__':
     app.run(debug=False, host="0.0.0.0", port=8000)
