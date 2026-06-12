@@ -16,6 +16,9 @@ from dotenv import load_dotenv
 import os
 from flask_migrate import Migrate
 from flask import send_from_directory
+import json
+from io import BytesIO
+from datetime import datetime
 
 
 load_dotenv()
@@ -117,6 +120,8 @@ class Pedido(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     dominio = db.Column(db.String(20))
     url_pdf = db.Column(db.String, nullable=True)
+    plan = db.Column(db.String(20), default='oro')   # 'bronce', 'plata', 'oro'
+    datos_json = db.Column(db.Text, nullable=True)         # JSON con todos los datos del informe
 
     def __repr__(self):
         return f'<Pedido {self.id} - {self.cliente_nombre}>'
@@ -152,6 +157,123 @@ class Mensaje(db.Model):
     email = db.Column(db.String(120))
     texto = db.Column(db.Text)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
+
+def es_admin():
+    """Devuelve True si el usuario logueado es admin.
+    Ajustá la lógica según tu modelo: podés agregar un campo
+    is_admin = db.Column(db.Boolean, default=False) al modelo Usuario.
+    Por ahora usamos una lista de IDs hardcodeada como arranque seguro."""
+    ADMIN_IDS = [1]  # <-- Poné acá tu ID de usuario admin
+    return current_user.is_authenticated and current_user.id in ADMIN_IDS
+
+def parsear_datos_formulario(form):
+    """Convierte el form con arrays (multas, embargos, etc.) en un dict limpio."""
+    datos = {
+        # Vehículo
+        'marca': form.get('marca', '').strip(),
+        'modelo': form.get('modelo', '').strip(),
+        'version': form.get('version', '').strip(),
+        'anio': form.get('anio', '').strip(),
+        'color': form.get('color', '').strip(),
+        'tipo': form.get('tipo', '').strip(),
+        'motor': form.get('motor', '').strip(),
+        'combustible': form.get('combustible', '').strip(),
+        'nro_motor': form.get('nro_motor', '').strip(),
+        'nro_chasis': form.get('nro_chasis', '').strip(),
+        'radicacion': form.get('radicacion', '').strip(),
+
+        # Titular
+        'titular_nombre': form.get('titular_nombre', '').strip(),
+        'titular_cuit': form.get('titular_cuit', '').strip(),
+        'titular_tipo': form.get('titular_tipo', '').strip(),
+        'titular_domicilio': form.get('titular_domicilio', '').strip(),
+        'titular_provincia': form.get('titular_provincia', '').strip(),
+
+        # Situación legal
+        'robado': form.get('robado', 'No'),
+        'inhabilitado': form.get('inhabilitado', 'No'),
+        'baja_dominio': form.get('baja_dominio', 'No'),
+
+        # Patente
+        'patente_estado': form.get('patente_estado', 'Sin datos'),
+        'patente_monto_total': form.get('patente_monto_total', '').strip(),
+        'patente_periodos': form.get('patente_periodos', '').strip(),
+        'patente_obs': form.get('patente_obs', '').strip(),
+
+        # Precio
+        'precio_min': form.get('precio_min', '').strip(),
+        'precio_max': form.get('precio_max', '').strip(),
+        'precio_fuente': form.get('precio_fuente', '').strip(),
+        'precio_fecha': form.get('precio_fecha', '').strip(),
+        'precio_obs': form.get('precio_obs', '').strip(),
+
+        # Observaciones
+        'observaciones': form.get('observaciones', '').strip(),
+    }
+
+    # Arrays: multas
+    multa_fechas = form.getlist('multa_fecha[]')
+    multa_descs = form.getlist('multa_descripcion[]')
+    multa_organismos = form.getlist('multa_organismo[]')
+    multa_montos = form.getlist('multa_monto[]')
+    datos['multas'] = [
+        {'fecha': f, 'descripcion': d, 'organismo': o, 'monto': m}
+        for f, d, o, m in zip(multa_fechas, multa_descs, multa_organismos, multa_montos)
+        if f.strip() or d.strip()  # descarta filas completamente vacías
+    ]
+
+    # Arrays: embargos
+    emb_tipos = form.getlist('embargo_tipo[]')
+    emb_organismos = form.getlist('embargo_organismo[]')
+    emb_montos = form.getlist('embargo_monto[]')
+    datos['embargos'] = [
+        {'tipo': t, 'organismo': o, 'monto': m}
+        for t, o, m in zip(emb_tipos, emb_organismos, emb_montos)
+        if t.strip() or o.strip()
+    ]
+
+    # Arrays: titulares históricos
+    tit_ordenes = form.getlist('titular_orden[]')
+    tit_nombres = form.getlist('titular_hist_nombre[]')
+    tit_desdes = form.getlist('titular_hist_desde[]')
+    tit_hastas = form.getlist('titular_hist_hasta[]')
+    datos['titulares'] = [
+        {'orden': o, 'nombre': n, 'desde': d, 'hasta': h}
+        for o, n, d, h in zip(tit_ordenes, tit_nombres, tit_desdes, tit_hastas)
+        if n.strip()
+    ]
+
+    # Arrays: recalls
+    rec_fechas = form.getlist('recall_fecha[]')
+    rec_descs = form.getlist('recall_descripcion[]')
+    rec_estados = form.getlist('recall_estado[]')
+    datos['recalls'] = [
+        {'fecha': f, 'descripcion': d, 'estado': e}
+        for f, d, e in zip(rec_fechas, rec_descs, rec_estados)
+        if d.strip()
+    ]
+
+    return datos
+
+def generar_pdf_informe(pedido, datos):
+    """Renderiza el template HTML y lo convierte a PDF con WeasyPrint.
+    Devuelve bytes del PDF."""
+    from flask import render_template
+    from datetime import datetime
+    from weasyprint import HTML as WeasyprintHTML  # <-- se importa solo cuando se llama la función
+    from datetime import datetime
+
+    fecha_emision = datetime.now().strftime('%d/%m/%Y %H:%M')
+
+    html_str = render_template(
+        'informe_pdf.html',
+        pedido=pedido,
+        datos=datos,
+        fecha_emision=fecha_emision
+    )
+
+    pdf_bytes = WeasyprintHTML(string=html_str, base_url='').write_pdf()
+    return pdf_bytes
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -410,6 +532,105 @@ def terminos():
 @app.route('/privacidad')
 def privacidad():
     return render_template('privacidad.html')
+
+@app.route('/admin/informe/<int:id>', methods=['GET', 'POST'])
+@login_required
+def cargar_informe(id):
+    if not es_admin():
+        flash('Acceso restringido.', 'danger')
+        return redirect(url_for('panel'))
+
+    pedido = Pedido.query.get_or_404(id)
+
+    # Cargar datos previos si existen (para re-editar)
+    datos = {}
+    if pedido.datos_json:
+        try:
+            datos = json.loads(pedido.datos_json)
+        except Exception:
+            datos = {}
+
+    if request.method == 'POST':
+        accion = request.form.get('accion', 'guardar')
+        datos  = parsear_datos_formulario(request.form)
+
+        # Guardar siempre
+        pedido.datos_json = json.dumps(datos, ensure_ascii=False)
+
+        if accion == 'generar':
+            try:
+                pdf_bytes = generar_pdf_informe(pedido, datos)
+
+                # Nombre del archivo en Supabase
+                nombre_archivo = f"{pedido.id}_{pedido.dominio.upper()}.pdf"
+
+                # Subir a Supabase (upsert para sobreescribir si ya existe)
+                bucket = supabase.storage.from_(BUCKET_NAME)
+                bucket.upload(
+                    path=nombre_archivo,
+                    file=pdf_bytes,
+                    file_options={"content-type": "application/pdf", "upsert": "true"}
+                )
+
+                url_publica = bucket.get_public_url(nombre_archivo)
+                pedido.url_pdf = url_publica
+                pedido.estado  = 'Terminado'
+                db.session.commit()
+
+                # Notificar al cliente
+                try:
+                    usuario = Usuario.query.get(pedido.usuario_id)
+                    msg = Message(
+                        subject='Tu informe vehicular ya está disponible',
+                        recipients=[usuario.email],
+                        body=(
+                            f"Hola {usuario.nombre},\n\n"
+                            f"Tu informe del dominio {pedido.dominio} ya está listo.\n"
+                            f"Podés descargarlo desde tu panel: https://habemusdata.com.ar/panel\n\n"
+                            f"Gracias por confiar en HabemusData.\n"
+                        )
+                    )
+                    mail.send(msg)
+                except Exception as e:
+                    app.logger.warning(f'Email no enviado para pedido {pedido.id}: {e}')
+
+                flash(f'✓ PDF generado y publicado. El cliente ya puede descargarlo.', 'success')
+                return redirect(url_for('informes'))
+
+            except Exception as e:
+                app.logger.error(f'Error generando PDF pedido {pedido.id}: {e}')
+                db.session.commit()  # Guardamos los datos igual
+                flash(f'Error al generar el PDF: {str(e)}. Los datos quedaron guardados.', 'danger')
+
+        else:
+            # Solo guardar borrador
+            db.session.commit()
+            flash('Borrador guardado correctamente.', 'success')
+
+    return render_template('cargar_informe.html', pedido=pedido, datos=datos)
+
+
+# ── RUTA: Preview del PDF en el navegador (útil para debug) ─────────
+@app.route('/admin/informe/<int:id>/preview')
+@login_required
+def preview_informe(id):
+    if not es_admin():
+        return 'Acceso restringido', 403
+
+    pedido = Pedido.query.get_or_404(id)
+    datos = {}
+    if pedido.datos_json:
+        try:
+            datos = json.loads(pedido.datos_json)
+        except Exception:
+            datos = {}
+
+    from datetime import datetime
+    fecha_emision = datetime.now().strftime('%d/%m/%Y %H:%M')
+
+    # Renderiza el HTML del PDF directo en el navegador para verificar diseño
+    return render_template('informe_pdf.html', pedido=pedido, datos=datos, fecha_emision=fecha_emision)
+
 
 if __name__ == '__main__':
     app.run(debug=False, host="0.0.0.0", port=8000)
