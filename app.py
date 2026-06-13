@@ -19,6 +19,7 @@ from flask import send_from_directory
 import json
 from io import BytesIO
 from datetime import datetime
+import threading
 
 
 load_dotenv()
@@ -45,17 +46,13 @@ def actualizar_pedidos_con_pdf(para_usuario_id):
                     print(f"[✓] PDF actualizado para pedido {pedido.id}")
 
                     # Enviar email
-                    try:
-                        usuario = Usuario.query.get(pedido.usuario_id)
-                        mensaje = Message(
-                            subject="Tu informe ya está disponible",
-                            recipients=[usuario.email],
-                            body=f"Hola {usuario.nombre},\n\nTu informe del dominio {pedido.dominio} ya está disponible.\nPodés verlo desde tu panel de usuario."
-                        )
-                        mail.send(mensaje)
-                        print(f"✓ Email enviado a {usuario.email}")
-                    except Exception as e:
-                        print(f"⚠️ Error al enviar mail: {e}")
+                    usuario = Usuario.query.get(pedido.usuario_id)
+                    mensaje = Message(
+                        subject="Tu informe ya está disponible",
+                        recipients=[usuario.email],
+                        body=f"Hola {usuario.nombre},\n\nTu informe del dominio {pedido.dominio} ya está disponible.\nPodés verlo desde tu panel de usuario."
+                    )
+                    disparar_email(mensaje)
 
         except Exception as e:
             print(f"Error en pedido {pedido.id}: {str(e)}")
@@ -98,8 +95,22 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
 app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
 app.config['MAIL_DEFAULT_SENDER'] = 'hg.rodriguez1988@gmail.com'
+app.config['MAIL_TIMEOUT'] = 5
 
 mail = Mail(app)
+
+def enviar_email_async(app, msg):
+    """Envía un email en un hilo separado para no bloquear el request."""
+    with app.app_context():
+        try:
+            mail.send(msg)
+            app.logger.info(f"Email enviado a {msg.recipients}")
+        except Exception as e:
+            app.logger.warning(f"No se pudo enviar el correo a {msg.recipients}: {e}")
+
+def disparar_email(msg):
+    """Lanza el envío de email en background."""
+    threading.Thread(target=enviar_email_async, args=(app, msg)).start()
 
 # Inicializar SQLAlchemy
 db = SQLAlchemy(app)
@@ -373,18 +384,14 @@ def nuevo_pedido():
         #    print("Error Supabase:", e)
 
         # -------- Enviar el email --------
-        try:
-            msg = Message(
-                'Nuevo Pedido Creado',
-                sender='hg.rodriguez1988@gmail.com',
-                recipients=['hg.rodriguez1988@gmail.com']
-            )
-            msg.body = f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
-            mail.send(msg)
-            flash('¡El pedido se creó y el correo se envió con éxito!', 'success')
-        except Exception as e:
-            flash('El pedido se creó, pero no se pudo enviar el correo.', 'warning')
-            print(e)
+        msg = Message(
+            'Nuevo Pedido Creado',
+            sender='hg.rodriguez1988@gmail.com',
+            recipients=['hg.rodriguez1988@gmail.com']
+        )
+        msg.body = f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
+        disparar_email(msg)
+        flash('¡El pedido se creó con éxito!', 'success')
 
         return redirect(url_for('panel'))
 
@@ -460,7 +467,7 @@ def contacto():
         # Enviar email
         msg = Message('Nuevo mensaje de contacto', recipients=['hg.rodriguez1988@gmail.com'])
         msg.body = f'Nombre: {nombre}\nEmail: {email}\nMensaje:\n{texto}'
-        mail.send(msg)
+        disparar_email(msg)
         return render_template('contacto.html', enviado=True)
 
     return render_template('contacto.html', enviado=False)
@@ -585,21 +592,18 @@ def cargar_informe(id):
                 db.session.commit()
 
                 # Notificar al cliente
-                try:
-                    usuario = Usuario.query.get(pedido.usuario_id)
-                    msg = Message(
-                        subject='Tu informe vehicular ya está disponible',
-                        recipients=[usuario.email],
-                        body=(
-                            f"Hola {usuario.nombre},\n\n"
-                            f"Tu informe del dominio {pedido.dominio} ya está listo.\n"
-                            f"Podés descargarlo desde tu panel: https://habemusdata.com.ar/panel\n\n"
-                            f"Gracias por confiar en HabemusData.\n"
-                        )
+                usuario = Usuario.query.get(pedido.usuario_id)
+                msg = Message(
+                    subject='Tu informe vehicular ya está disponible',
+                    recipients=[usuario.email],
+                    body=(
+                        f"Hola {usuario.nombre},\n\n"
+                        f"Tu informe del dominio {pedido.dominio} ya está listo.\n"
+                        f"Podés descargarlo desde tu panel: https://habemusdata.com.ar/panel\n\n"
+                        f"Gracias por confiar en HabemusData.\n"
                     )
-                    mail.send(msg)
-                except Exception as e:
-                    app.logger.warning(f'Email no enviado para pedido {pedido.id}: {e}')
+                )
+                disparar_email(msg)
 
                 flash(f'✓ PDF generado y publicado. El cliente ya puede descargarlo.', 'success')
                 return redirect(url_for('informes'))
