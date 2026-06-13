@@ -163,7 +163,7 @@ def es_admin():
     Ajustá la lógica según tu modelo: podés agregar un campo
     is_admin = db.Column(db.Boolean, default=False) al modelo Usuario.
     Por ahora usamos una lista de IDs hardcodeada como arranque seguro."""
-    ADMIN_IDS = [1]  # <-- Poné acá tu ID de usuario admin
+    ADMIN_IDS = [3]  # <-- Poné acá tu ID de usuario admin
     return current_user.is_authenticated and current_user.id in ADMIN_IDS
 
 def parsear_datos_formulario(form):
@@ -468,7 +468,14 @@ def contacto():
 @app.route('/panel/informes')
 @login_required
 def informes():
-    pedidos = Pedido.query.filter_by(estado='En espera').all()  # Solo pedidos pendientes
+    if not es_admin():
+        flash('Acceso restringido.', 'danger')
+        return redirect(url_for('panel'))
+
+    pedidos = Pedido.query.filter(
+        Pedido.estado.in_(['En espera', 'En proceso'])
+    ).order_by(Pedido.fecha_pedido.asc()).all()
+
     return render_template('informes.html', pedidos=pedidos)
 
 @app.route('/panel/informes/actualizar_estado/<int:pedido_id>', methods=['POST'])
