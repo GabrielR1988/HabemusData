@@ -110,13 +110,12 @@ app.config['MAIL_TIMEOUT'] = 5
 mail = Mail(app)
 
 def enviar_email_async(app, msg):
-    """Envía un email en un hilo separado para no bloquear el request."""
     with app.app_context():
         try:
             mail.send(msg)
-            app.logger.info(f"Email enviado a {msg.recipients}")
+            app.logger.info(f"Email enviado a {msg.recipients}")  # ← aparece en los logs si sale bien
         except Exception as e:
-            app.logger.warning(f"No se pudo enviar el correo a {msg.recipients}: {e}")
+            app.logger.warning(f"No se pudo enviar el correo a {msg.recipients}: {e}")  # ← aparece si falla
 
 def disparar_email(msg):
     """Lanza el envío de email en background."""
@@ -385,7 +384,7 @@ def nuevo_pedido():
                 recipients=['hg.rodriguez1988@gmail.com']
             )
             msg.body = f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
-            mail.send(msg)
+            disparar_email(msg)
         except Exception as e:
             app.logger.warning(f'No se pudo enviar el mail de nuevo pedido: {e}')
 
