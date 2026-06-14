@@ -372,7 +372,7 @@ def nuevo_pedido():
         nuevo = Pedido(
             dominio=dominio,
             fecha_pedido=datetime.now(),
-            estado='Pendiente',
+            estado='En espera',
             usuario_id=current_user.id,
             cliente_nombre=usuario.nombre
         )
@@ -399,18 +399,19 @@ def nuevo_pedido():
         #    print("Error Supabase:", e)
 
         # -------- Enviar el email --------
-        msg = Message(
-            'Nuevo Pedido Creado',
-            sender='hg.rodriguez1988@gmail.com',
-            recipients=['hg.rodriguez1988@gmail.com']
-        )
-        msg.body = f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
-        disparar_email(msg)
+        try:
+            msg = Message(
+                'Nuevo Pedido Creado',
+                sender='hg.rodriguez1988@gmail.com',
+                recipients=['hg.rodriguez1988@gmail.com']
+            )
+            msg.body = f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
+            mail.send(msg)
+        except Exception as e:
+            app.logger.warning(f'No se pudo enviar el mail de nuevo pedido: {e}')
+
         flash('¡El pedido se creó con éxito!', 'success')
-
         return redirect(url_for('panel'))
-
-    return render_template('nuevo_pedido.html')
 
 
 @app.route('/registro', methods=['GET', 'POST'])
