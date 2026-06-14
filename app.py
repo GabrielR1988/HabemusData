@@ -365,8 +365,6 @@ def panel():
 def nuevo_pedido():
     if request.method == 'POST':
         dominio = request.form['dominio'].upper().strip()
-
-        # Obtenemos el objeto real del usuario
         usuario = Usuario.query.get(current_user.id)
 
         nuevo = Pedido(
@@ -380,25 +378,6 @@ def nuevo_pedido():
         db.session.add(nuevo)
         db.session.commit()
 
-        # -------- Generar el PDF (ejemplo básico) --------
-        #ruta_local = f"informes/informe_{nuevo.id}.pdf"
-        #os.makedirs("informes", exist_ok=True)  # Asegura que la carpeta exista
-        #with open(ruta_local, "wb") as f:
-        #    f.write(f"Informe del dominio {dominio}".encode("utf-8"))  # Podés reemplazar esto por tu lógica real
-
-        # -------- Subir a Supabase Storage --------
-        #nombre_en_bucket = f"informe_{nuevo.id}.pdf"
-        #try:
-        #    with open(ruta_local, "rb") as archivo:
-        #        supabase.storage.from_("informes").upload(nombre_en_bucket, archivo, {"upsert": True})
-        #    url_publica = supabase.storage.from_("informes").get_public_url(nombre_en_bucket)
-        #    nuevo.url_pdf = url_publica
-        #    db.session.commit()
-        #except Exception as e:
-        #    flash("El pedido fue creado, pero hubo un problema al subir el informe a la nube.", "warning")
-        #    print("Error Supabase:", e)
-
-        # -------- Enviar el email --------
         try:
             msg = Message(
                 'Nuevo Pedido Creado',
@@ -412,6 +391,8 @@ def nuevo_pedido():
 
         flash('¡El pedido se creó con éxito!', 'success')
         return redirect(url_for('panel'))
+
+    return render_template('nuevo_pedido.html')  # ← fuera del if, al nivel de la función
 
 
 @app.route('/registro', methods=['GET', 'POST'])
