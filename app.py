@@ -20,6 +20,7 @@ import json
 from io import BytesIO
 from datetime import datetime
 import threading
+from functools import wraps
 
 
 load_dotenv()
@@ -27,6 +28,15 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not es_admin():
+            flash('Acceso restringido.', 'danger')
+            return redirect(url_for('panel'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def actualizar_pedidos_con_pdf(para_usuario_id):
     bucket = supabase.storage.from_(BUCKET_NAME)
@@ -438,19 +448,21 @@ def registro():
     return render_template('registro.html')
 
 @app.route('/pedido/<int:id>')
+@login_required
 def ver_pedido(id):
     pedido = Pedido.query.get_or_404(id)
-    if pedido.usuario_id != current_user.id:
+    if pedido.usuario_id != int(current_user.id):
         return 'Acceso denegado'
 
-    return render_template('detalle_pedido.html', pedido=pedido)
+    return render_template('detalle-pedido.html', pedido=pedido)
 
 @app.route('/pedido/<int:id>/eliminar', methods=['POST'])
+@login_required
 def eliminar_pedido(id):
     pedido = Pedido.query.get_or_404(id)
 
     #if pedido.usuario_id != session['usuario_id']:
-    if pedido.usuario_id != current_user.id:
+    if pedido.usuario_id != int(current_user.id):
         return 'Acceso denegado'
 
     db.session.delete(pedido)
@@ -479,11 +491,8 @@ def contacto():
 
 @app.route('/panel/informes')
 @login_required
+@admin_required
 def informes():
-    if not es_admin():
-        flash('Acceso restringido.', 'danger')
-        return redirect(url_for('panel'))
-
     pedidos = Pedido.query.filter(
         Pedido.estado.in_(['En espera', 'En proceso'])
     ).order_by(Pedido.fecha_pedido.asc()).all()
@@ -492,6 +501,7 @@ def informes():
 
 @app.route('/panel/informes/actualizar_estado/<int:pedido_id>', methods=['POST'])
 @login_required
+@admin_required
 def actualizar_estado(pedido_id):
     pedido = Pedido.query.get_or_404(pedido_id)
     pedido.estado = 'En proceso'  # Cambiar el estado cuando se empieza a trabajar
@@ -501,6 +511,7 @@ def actualizar_estado(pedido_id):
 
 @app.route('/panel/informes/terminar/<int:pedido_id>', methods=['POST'])
 @login_required
+@admin_required
 def terminar(pedido_id):
     pedido = Pedido.query.get_or_404(pedido_id)
     pedido.estado = 'Terminado'  # Cambiar el estado a terminado
@@ -527,18 +538,29 @@ from flask import send_file
 def descargar_informe(id):
     pedido = Pedido.query.get_or_404(id)
 
+    if pedido.usuario_id != int(current_user.id):
+        return 'Acceso denegado'
+
     if not pedido.url_pdf:
         flash("El informe aún no está disponible para descargar.", "warning")
         return redirect(url_for('panel'))
 
-    # Ruta del archivo local si lo estás buscando ahí
-    ruta_archivo = f"informes/informe_{pedido.id}.pdf"
+    nombre_archivo = f"{pedido.id}_{pedido.dominio.upper()}.pdf"
 
-    if not os.path.exists(ruta_archivo):
-        flash("El archivo no se encuentra disponible en el servidor.", "warning")
+    try:
+        bucket = supabase.storage.from_(BUCKET_NAME)
+        pdf_bytes = bucket.download(nombre_archivo)
+    except Exception as e:
+        app.logger.error(f'Error descargando PDF pedido {pedido.id}: {e}')
+        flash("No se pudo descargar el informe. Intentá de nuevo más tarde.", "warning")
         return redirect(url_for('panel'))
 
-    return send_file(ruta_archivo, as_attachment=True)
+    return send_file(
+        BytesIO(pdf_bytes),
+        as_attachment=True,
+        download_name=f"informe_{pedido.dominio}.pdf",
+        mimetype='application/pdf'
+    )
 
 @app.route('/robots.txt')
 def robots_txt():
@@ -554,11 +576,8 @@ def privacidad():
 
 @app.route('/admin/informe/<int:id>', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def cargar_informe(id):
-    if not es_admin():
-        flash('Acceso restringido.', 'danger')
-        return redirect(url_for('panel'))
-
     pedido = Pedido.query.get_or_404(id)
 
     # Cargar datos previos si existen (para re-editar)
@@ -629,10 +648,8 @@ def cargar_informe(id):
 # ── RUTA: Preview del PDF en el navegador (útil para debug) ─────────
 @app.route('/admin/informe/<int:id>/preview')
 @login_required
+@admin_required
 def preview_informe(id):
-    if not es_admin():
-        return 'Acceso restringido', 403
-
     pedido = Pedido.query.get_or_404(id)
     datos = {}
     if pedido.datos_json:
