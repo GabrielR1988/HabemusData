@@ -8,7 +8,6 @@ import random, re, os
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
-from flask_mail import Mail, Message
 from flask import flash
 from flask import send_file
 from supabase import create_client
@@ -19,8 +18,8 @@ from flask import send_from_directory
 import json
 from io import BytesIO
 from datetime import datetime
-import threading
 from functools import wraps
+import resend
 
 
 load_dotenv()
@@ -28,6 +27,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+resend.api_key = os.getenv("re_Rjvy4byE_JF367pd6StThajviJLu1LuFD")
 
 def admin_required(f):
     @wraps(f)
@@ -57,12 +57,11 @@ def actualizar_pedidos_con_pdf(para_usuario_id):
 
                     # Enviar email
                     usuario = Usuario.query.get(pedido.usuario_id)
-                    mensaje = Message(
-                        subject="Tu informe ya está disponible",
-                        recipients=[usuario.email],
-                        body=f"Hola {usuario.nombre},\n\nTu informe del dominio {pedido.dominio} ya está disponible.\nPodés verlo desde tu panel de usuario."
+                    disparar_email(
+                        destinatario=usuario.email,
+                        asunto='Tu informe ya está disponible',
+                        cuerpo=f"Hola {usuario.nombre},\n\nTu informe del dominio {pedido.dominio} ya está disponible.\nPodés verlo desde tu panel de usuario."
                     )
-                    disparar_email(mensaje)
 
         except Exception as e:
             print(f"Error en pedido {pedido.id}: {str(e)}")
@@ -98,28 +97,16 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL").replace("postgres://", "postgresql://")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Configuración del servidor SMTP
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
-app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
-app.config['MAIL_DEFAULT_SENDER'] = 'hg.rodriguez1988@gmail.com'
-app.config['MAIL_TIMEOUT'] = 5
-
-mail = Mail(app)
-
-def enviar_email_async(app, msg):
-    with app.app_context():
-        try:
-            mail.send(msg)
-            app.logger.info(f"Email enviado a {msg.recipients}")  # ← aparece en los logs si sale bien
-        except Exception as e:
-            app.logger.warning(f"No se pudo enviar el correo a {msg.recipients}: {e}")  # ← aparece si falla
-
-def disparar_email(msg):
-    """Lanza el envío de email en background."""
-    threading.Thread(target=enviar_email_async, args=(app, msg)).start()
+def disparar_email(destinatario, asunto, cuerpo):
+    try:
+        resend.Emails.send({
+            "from": "HabemusData <onboarding@resend.dev>",  # o tu dominio verificado
+            "to": destinatario,
+            "subject": asunto,
+            "text": cuerpo
+        })
+    except Exception as e:
+        app.logger.warning(f"No se pudo enviar el correo: {e}")
 
 # Inicializar SQLAlchemy
 db = SQLAlchemy(app)
@@ -384,7 +371,11 @@ def nuevo_pedido():
                 recipients=['hg.rodriguez1988@gmail.com']
             )
             msg.body = f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
-            disparar_email(msg)
+            disparar_email(
+                destinatario='hg.rodriguez1988@gmail.com',
+                asunto='Nuevo Pedido Creado',
+                cuerpo=f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
+            )
         except Exception as e:
             app.logger.warning(f'No se pudo enviar el mail de nuevo pedido: {e}')
 
@@ -598,17 +589,16 @@ def cargar_informe(id):
 
                 # Notificar al cliente
                 usuario = Usuario.query.get(pedido.usuario_id)
-                msg = Message(
-                    subject='Tu informe vehicular ya está disponible',
-                    recipients=[usuario.email],
-                    body=(
+                disparar_email(
+                    destinatario=usuario.email,
+                    asunto='Tu informe vehicular ya está disponible',
+                    cuerpo=(
                         f"Hola {usuario.nombre},\n\n"
                         f"Tu informe del dominio {pedido.dominio} ya está listo.\n"
                         f"Podés descargarlo desde tu panel: https://habemusdata.com.ar/panel\n\n"
                         f"Gracias por confiar en HabemusData.\n"
                     )
                 )
-                disparar_email(msg)
 
                 flash(f'✓ PDF generado y publicado. El cliente ya puede descargarlo.', 'success')
                 return redirect(url_for('informes'))
