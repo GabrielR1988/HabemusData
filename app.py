@@ -179,7 +179,12 @@ def es_admin():
         return False
 
 def parsear_datos_formulario(form):
+    SECCIONES = ['vehiculo','radicacion','legal','vtv','gnc','km','impuesto','multas','embargos','titulares','recalls','precios','observaciones']
+
     datos = {
+        # Estado de cada switch (1 = incluir, 0 = no incluir)
+        **{f'sec_{s}': '1' if form.get(f'sec_{s}') else '0' for s in SECCIONES},
+
         # Vehículo
         'marca':      form.get('marca', '').strip(),
         'modelo':     form.get('modelo', '').strip(),
@@ -188,11 +193,11 @@ def parsear_datos_formulario(form):
         'nro_chasis': form.get('nro_chasis', '').strip(),
 
         # Registro de radicación
-        'radicado':               form.get('radicado', '').strip(),
-        'radicacion_direccion':   form.get('radicacion_direccion', '').strip(),
-        'radicacion_telefono':    form.get('radicacion_telefono', '').strip(),
-        'radicacion_registro':    form.get('radicacion_registro', '').strip(),
-        'radicacion_localidad':   form.get('radicacion_localidad', '').strip(),
+        'radicado':             form.get('radicado', '').strip(),
+        'radicacion_direccion': form.get('radicacion_direccion', '').strip(),
+        'radicacion_telefono':  form.get('radicacion_telefono', '').strip(),
+        'radicacion_registro':  form.get('radicacion_registro', '').strip(),
+        'radicacion_localidad': form.get('radicacion_localidad', '').strip(),
 
         # Situación legal
         'robado':       form.get('robado', 'No'),
@@ -208,31 +213,30 @@ def parsear_datos_formulario(form):
         'vtv_falla':     form.get('vtv_falla', '').strip(),
 
         # GNC
-        'gnc_operacion':        form.get('gnc_operacion', '').strip(),
-        'gnc_fecha':            form.get('gnc_fecha', '').strip(),
-        'gnc_fecha_vencimiento':form.get('gnc_fecha_vencimiento', '').strip(),
-        'gnc_nro_oblea':        form.get('gnc_nro_oblea', '').strip(),
-        'gnc_lugar':            form.get('gnc_lugar', '').strip(),
+        'gnc_operacion':         form.get('gnc_operacion', '').strip(),
+        'gnc_fecha':             form.get('gnc_fecha', '').strip(),
+        'gnc_fecha_vencimiento': form.get('gnc_fecha_vencimiento', '').strip(),
+        'gnc_nro_oblea':         form.get('gnc_nro_oblea', '').strip(),
+        'gnc_lugar':             form.get('gnc_lugar', '').strip(),
 
         # Kilometraje
-        'km_fecha':  form.get('km_fecha', '').strip(),
-        'km_valor':  form.get('km_valor', '').strip(),
+        'km_fecha': form.get('km_fecha', '').strip(),
+        'km_valor': form.get('km_valor', '').strip(),
 
         # Infracciones
-        'multas_descripcion': form.get('multas_descripcion', '').strip(),
-        'multas_total':       form.get('multas_total', '0').strip(),
+        'multas_total': form.get('multas_total', '0').strip(),
 
         # Observaciones generales
         'observaciones': form.get('observaciones', '').strip(),
     }
 
     # Arrays: impuesto automotor
-    imp_anios      = form.getlist('impuesto_anio[]')
-    imp_cuotas     = form.getlist('impuesto_cuota[]')
-    imp_estados    = form.getlist('impuesto_estado[]')
-    imp_venc       = form.getlist('impuesto_vencimiento[]')
-    imp_orig       = form.getlist('impuesto_importe_original[]')
-    imp_act        = form.getlist('impuesto_importe_actualizado[]')
+    imp_anios   = form.getlist('impuesto_anio[]')
+    imp_cuotas  = form.getlist('impuesto_cuota[]')
+    imp_estados = form.getlist('impuesto_estado[]')
+    imp_venc    = form.getlist('impuesto_vencimiento[]')
+    imp_orig    = form.getlist('impuesto_importe_original[]')
+    imp_act     = form.getlist('impuesto_importe_actualizado[]')
     datos['impuesto'] = [
         {'anio': a, 'cuota': c, 'estado': e, 'vencimiento': v,
          'importe_original': io, 'importe_actualizado': ia}
@@ -240,13 +244,14 @@ def parsear_datos_formulario(form):
         if a.strip() or c.strip()
     ]
 
-    # Arrays: multas / infracciones
-    multa_fechas  = form.getlist('multa_fecha[]')
-    multa_actas   = form.getlist('multa_acta[]')
-    multa_importes= form.getlist('multa_importe[]')
+    # Arrays: multas / infracciones (con descripcion por fila)
+    multa_fechas   = form.getlist('multa_fecha[]')
+    multa_actas    = form.getlist('multa_acta[]')
+    multa_importes = form.getlist('multa_importe[]')
+    multa_descs    = form.getlist('multa_descripcion[]')
     datos['multas'] = [
-        {'fecha': f, 'acta': a, 'importe': i}
-        for f, a, i in zip(multa_fechas, multa_actas, multa_importes)
+        {'fecha': f, 'acta': a, 'importe': i, 'descripcion': d}
+        for f, a, i, d in zip(multa_fechas, multa_actas, multa_importes, multa_descs)
         if f.strip() or a.strip()
     ]
 
@@ -283,8 +288,8 @@ def parsear_datos_formulario(form):
     ]
 
     # Arrays: precios de referencia
-    precio_anios   = form.getlist('precio_anio[]')
-    precio_importes= form.getlist('precio_importe[]')
+    precio_anios    = form.getlist('precio_anio[]')
+    precio_importes = form.getlist('precio_importe[]')
     datos['precios'] = [
         {'anio': a, 'importe': i}
         for a, i in zip(precio_anios, precio_importes)

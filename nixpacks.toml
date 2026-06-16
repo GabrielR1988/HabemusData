@@ -1,4 +1,14 @@
-# nixpacks.toml
+[phases.setup]
+nixPkgs = [
+  "gobject-introspection",
+  "cairo",
+  "pango",
+  "gdk-pixbuf",
+  "libffi",
+  "zlib",
+  "fontconfig",
+  "freetype",
+]
 
 [start]
-cmd = "guinicorn app:app"
+cmd = "gunicorn app:app"
