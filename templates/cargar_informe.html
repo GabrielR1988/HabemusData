@@ -1,0 +1,713 @@
+{% extends 'base.html' %}
+{% block title %}Cargar Informe #{{ pedido.id }} - HabemusData{% endblock %}
+
+{% block head %}
+<style>
+  .ci-section {
+    background: var(--hd-card);
+    border: 1px solid var(--hd-border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .ci-section-header {
+    background: var(--hd-card-2);
+    border-bottom: 1px solid var(--hd-border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ci-section-header i {
+    color: var(--hd-blue-lt);
+    font-size: .95rem;
+    width: 18px;
+    text-align: center;
+  }
+  .ci-section-title {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--hd-muted);
+    margin: 0;
+  }
+  .ci-section-body { padding: 24px; }
+
+  .ci-label {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--hd-muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* Tabla dinámica */
+  .ci-table { width: 100%; border-collapse: collapse; }
+  .ci-table thead th {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--hd-muted);
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--hd-border);
+  }
+  .ci-table tbody tr { border-bottom: 1px solid rgba(30,45,69,.4); }
+  .ci-table tbody td { padding: 8px 6px; vertical-align: middle; }
+  .ci-table .hd-input { font-size: .85rem; padding: 7px 10px; }
+
+  .ci-add-btn {
+    background: rgba(26,111,255,.08);
+    border: 1px dashed rgba(26,111,255,.3);
+    border-radius: var(--radius-sm);
+    color: var(--hd-blue-lt);
+    font-size: .82rem;
+    font-weight: 600;
+    padding: 9px 16px;
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .ci-add-btn:hover { background: rgba(26,111,255,.14); border-color: rgba(26,111,255,.5); }
+
+  .ci-del-btn {
+    background: rgba(248,113,113,.08);
+    border: 1px solid rgba(248,113,113,.2);
+    border-radius: 6px;
+    color: #f87171;
+    font-size: .78rem;
+    padding: 5px 9px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .ci-del-btn:hover { background: rgba(248,113,113,.18); }
+
+  .ci-radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .ci-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--hd-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: .85rem;
+    color: var(--hd-text);
+    transition: border-color .2s, background .2s;
+  }
+  .ci-radio-option input[type="radio"] { accent-color: var(--hd-blue); }
+  .ci-radio-option:has(input:checked) {
+    border-color: var(--hd-blue);
+    background: var(--hd-blue-dim);
+    color: var(--hd-white);
+  }
+
+  .ci-sticky-bar {
+    position: sticky;
+    bottom: 0;
+    background: rgba(10,16,24,.97);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--hd-border);
+    padding: 16px 0;
+    z-index: 100;
+  }
+
+  .total-infracciones {
+    background: var(--hd-card-2);
+    border: 1px solid var(--hd-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-4">
+
+  <div class="hd-page-header">
+    <div style="margin-bottom:6px;">
+      <a href="{{ url_for('informes') }}" style="color:var(--hd-muted);text-decoration:none;font-size:.85rem;">
+        <i class="fas fa-arrow-left me-1"></i> Volver a informes
+      </a>
+    </div>
+    <h1 class="hd-page-title">
+      CARGAR INFORME <span style="color:var(--hd-blue);">#{{ pedido.id }}</span>
+    </h1>
+    <p class="hd-page-sub">
+      Dominio: <span style="font-family:'Courier New',monospace;font-weight:700;color:var(--hd-white);letter-spacing:.1em;">{{ pedido.dominio }}</span>
+      &nbsp;·&nbsp; Cliente: <span>{{ pedido.cliente_nombre }}</span>
+    </p>
+  </div>
+
+  <form method="POST" id="formInforme">
+
+    <!-- ── DATOS DEL VEHÍCULO ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-car"></i>
+        <p class="ci-section-title">Datos del Vehículo</p>
+      </div>
+      <div class="ci-section-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="ci-label">Marca</label>
+            <input type="text" name="marca" class="form-control hd-input" value="{{ datos.get('marca','') }}">
+          </div>
+          <div class="col-md-3">
+            <label class="ci-label">Modelo</label>
+            <input type="text" name="modelo" class="form-control hd-input" value="{{ datos.get('modelo','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Año</label>
+            <input type="text" name="anio" class="form-control hd-input" value="{{ datos.get('anio','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Nro. Motor</label>
+            <input type="text" name="nro_motor" class="form-control hd-input" value="{{ datos.get('nro_motor','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Nro. Chasis</label>
+            <input type="text" name="nro_chasis" class="form-control hd-input" value="{{ datos.get('nro_chasis','') }}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REGISTRO DE RADICACIÓN ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-map-marker-alt"></i>
+        <p class="ci-section-title">Registro de Radicación</p>
+      </div>
+      <div class="ci-section-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="ci-label">Radicado (Titular)</label>
+            <input type="text" name="radicado" class="form-control hd-input" value="{{ datos.get('radicado','') }}">
+          </div>
+          <div class="col-md-4">
+            <label class="ci-label">Dirección</label>
+            <input type="text" name="radicacion_direccion" class="form-control hd-input" value="{{ datos.get('radicacion_direccion','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Teléfono</label>
+            <input type="text" name="radicacion_telefono" class="form-control hd-input" value="{{ datos.get('radicacion_telefono','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Registro</label>
+            <input type="text" name="radicacion_registro" class="form-control hd-input" value="{{ datos.get('radicacion_registro','') }}">
+          </div>
+          <div class="col-md-3">
+            <label class="ci-label">Localidad</label>
+            <input type="text" name="radicacion_localidad" class="form-control hd-input" value="{{ datos.get('radicacion_localidad','') }}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SITUACIÓN LEGAL ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-shield-alt"></i>
+        <p class="ci-section-title">Situación Legal</p>
+      </div>
+      <div class="ci-section-body">
+        <div class="row g-4">
+          <div class="col-md-4">
+            <label class="ci-label">¿Reportado como robado?</label>
+            <div class="ci-radio-group">
+              <label class="ci-radio-option">
+                <input type="radio" name="robado" value="No" {{ 'checked' if datos.get('robado','No') == 'No' }}> No
+              </label>
+              <label class="ci-radio-option">
+                <input type="radio" name="robado" value="Sí" {{ 'checked' if datos.get('robado') == 'Sí' }}> Sí
+              </label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="ci-label">¿Inhabilitado?</label>
+            <div class="ci-radio-group">
+              <label class="ci-radio-option">
+                <input type="radio" name="inhabilitado" value="No" {{ 'checked' if datos.get('inhabilitado','No') == 'No' }}> No
+              </label>
+              <label class="ci-radio-option">
+                <input type="radio" name="inhabilitado" value="Sí" {{ 'checked' if datos.get('inhabilitado') == 'Sí' }}> Sí
+              </label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="ci-label">¿Baja de dominio?</label>
+            <div class="ci-radio-group">
+              <label class="ci-radio-option">
+                <input type="radio" name="baja_dominio" value="No" {{ 'checked' if datos.get('baja_dominio','No') == 'No' }}> No
+              </label>
+              <label class="ci-radio-option">
+                <input type="radio" name="baja_dominio" value="Sí" {{ 'checked' if datos.get('baja_dominio') == 'Sí' }}> Sí
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VTV ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-clipboard-check"></i>
+        <p class="ci-section-title">VTV - Verificación Técnica Vehicular</p>
+      </div>
+      <div class="ci-section-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="ci-label">Organismo</label>
+            <input type="text" name="vtv_organismo" class="form-control hd-input" value="{{ datos.get('vtv_organismo','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Año</label>
+            <input type="text" name="vtv_anio" class="form-control hd-input" value="{{ datos.get('vtv_anio','') }}">
+          </div>
+          <div class="col-md-3">
+            <label class="ci-label">Centro</label>
+            <input type="text" name="vtv_centro" class="form-control hd-input" value="{{ datos.get('vtv_centro','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Resultado</label>
+            <select name="vtv_resultado" class="form-select hd-input">
+              <option value="" {{ 'selected' if not datos.get('vtv_resultado') }}>--</option>
+              <option value="Aprobado" {{ 'selected' if datos.get('vtv_resultado') == 'Aprobado' }}>Aprobado</option>
+              <option value="Rechazado" {{ 'selected' if datos.get('vtv_resultado') == 'Rechazado' }}>Rechazado</option>
+              <option value="Condicional" {{ 'selected' if datos.get('vtv_resultado') == 'Condicional' }}>Condicional</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Fecha Inspección</label>
+            <input type="date" name="vtv_fecha" class="form-control hd-input" value="{{ datos.get('vtv_fecha','') }}">
+          </div>
+          <div class="col-12">
+            <label class="ci-label">Falla / Observación</label>
+            <input type="text" name="vtv_falla" class="form-control hd-input" placeholder="Describí la falla si corresponde..." value="{{ datos.get('vtv_falla','') }}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GNC ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-fire"></i>
+        <p class="ci-section-title">GNC - Gas Natural Comprimido</p>
+      </div>
+      <div class="ci-section-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="ci-label">Operación</label>
+            <input type="text" name="gnc_operacion" class="form-control hd-input" value="{{ datos.get('gnc_operacion','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Fecha</label>
+            <input type="date" name="gnc_fecha" class="form-control hd-input" value="{{ datos.get('gnc_fecha','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Fecha Vencimiento</label>
+            <input type="date" name="gnc_fecha_vencimiento" class="form-control hd-input" value="{{ datos.get('gnc_fecha_vencimiento','') }}">
+          </div>
+          <div class="col-md-2">
+            <label class="ci-label">Nro. Oblea</label>
+            <input type="text" name="gnc_nro_oblea" class="form-control hd-input" value="{{ datos.get('gnc_nro_oblea','') }}">
+          </div>
+          <div class="col-md-3">
+            <label class="ci-label">Lugar</label>
+            <input type="text" name="gnc_lugar" class="form-control hd-input" value="{{ datos.get('gnc_lugar','') }}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── KILOMETRAJE ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-tachometer-alt"></i>
+        <p class="ci-section-title">Kilometraje</p>
+      </div>
+      <div class="ci-section-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="ci-label">Fecha de Lectura</label>
+            <input type="date" name="km_fecha" class="form-control hd-input" value="{{ datos.get('km_fecha','') }}">
+          </div>
+          <div class="col-md-3">
+            <label class="ci-label">Kilometraje</label>
+            <input type="text" name="km_valor" class="form-control hd-input" placeholder="Ej: 120.000" value="{{ datos.get('km_valor','') }}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── IMPUESTO AUTOMOTOR ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-file-invoice-dollar"></i>
+        <p class="ci-section-title">Impuesto Automotor</p>
+      </div>
+      <div class="ci-section-body">
+        <div style="overflow-x:auto;">
+          <table class="ci-table" id="tablaImpuesto">
+            <thead>
+              <tr>
+                <th>Año</th>
+                <th>Cuota</th>
+                <th>Estado</th>
+                <th>Vencimiento</th>
+                <th>Importe Original</th>
+                <th>Importe Actualizado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="impuestoBody">
+              {% for item in datos.get('impuesto', []) %}
+              <tr>
+                <td><input type="text" name="impuesto_anio[]" class="form-control hd-input" value="{{ item.anio }}"></td>
+                <td><input type="text" name="impuesto_cuota[]" class="form-control hd-input" value="{{ item.cuota }}"></td>
+                <td>
+                  <select name="impuesto_estado[]" class="form-select hd-input">
+                    <option value="Pago" {{ 'selected' if item.estado == 'Pago' }}>Pago</option>
+                    <option value="Impago" {{ 'selected' if item.estado == 'Impago' }}>Impago</option>
+                    <option value="En gestión" {{ 'selected' if item.estado == 'En gestión' }}>En gestión</option>
+                  </select>
+                </td>
+                <td><input type="date" name="impuesto_vencimiento[]" class="form-control hd-input" value="{{ item.vencimiento }}"></td>
+                <td><input type="text" name="impuesto_importe_original[]" class="form-control hd-input" value="{{ item.importe_original }}"></td>
+                <td><input type="text" name="impuesto_importe_actualizado[]" class="form-control hd-input" value="{{ item.importe_actualizado }}"></td>
+                <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="ci-add-btn" onclick="agregarFila('impuestoBody', filaImpuesto)">
+          <i class="fas fa-plus"></i> Agregar cuota
+        </button>
+      </div>
+    </div>
+
+    <!-- ── INFRACCIONES ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p class="ci-section-title">Infracciones de Tránsito</p>
+      </div>
+      <div class="ci-section-body">
+        <div style="overflow-x:auto;">
+          <table class="ci-table" id="tablaInfracciones">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Nro. Acta</th>
+                <th>Importe</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="infraccionesBody">
+              {% for item in datos.get('multas', []) %}
+              <tr>
+                <td><input type="date" name="multa_fecha[]" class="form-control hd-input" value="{{ item.fecha }}"></td>
+                <td><input type="text" name="multa_acta[]" class="form-control hd-input" value="{{ item.get('acta','') }}"></td>
+                <td><input type="number" name="multa_importe[]" class="form-control hd-input multa-importe" step="0.01" value="{{ item.get('importe','') }}" oninput="calcularTotalMultas()"></td>
+                <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove(); calcularTotalMultas()"><i class="fas fa-times"></i></button></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="ci-add-btn" onclick="agregarFilaMulta()">
+          <i class="fas fa-plus"></i> Agregar infracción
+        </button>
+        <div class="total-infracciones">
+          <span style="font-size:.78rem;color:var(--hd-muted);text-transform:uppercase;letter-spacing:.08em;">Total infracciones:</span>
+          <span id="totalMultas" style="font-weight:700;color:var(--hd-white);font-size:1rem;">$ 0,00</span>
+          <input type="hidden" name="multas_total" id="multasTotalInput" value="{{ datos.get('multas_total', '0') }}">
+        </div>
+        <div class="mt-3">
+          <label class="ci-label">Descripción / Observaciones de infracciones</label>
+          <textarea name="multas_descripcion" class="form-control hd-input" rows="3" placeholder="Detalle adicional sobre las infracciones...">{{ datos.get('multas_descripcion','') }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EMBARGOS ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-gavel"></i>
+        <p class="ci-section-title">Embargos e Inhibiciones</p>
+      </div>
+      <div class="ci-section-body">
+        <div style="overflow-x:auto;">
+          <table class="ci-table">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Organismo</th>
+                <th>Monto</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="embargosBody">
+              {% for item in datos.get('embargos', []) %}
+              <tr>
+                <td><input type="text" name="embargo_tipo[]" class="form-control hd-input" value="{{ item.tipo }}"></td>
+                <td><input type="text" name="embargo_organismo[]" class="form-control hd-input" value="{{ item.organismo }}"></td>
+                <td><input type="text" name="embargo_monto[]" class="form-control hd-input" value="{{ item.monto }}"></td>
+                <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="ci-add-btn" onclick="agregarFila('embargosBody', filaEmbargo)">
+          <i class="fas fa-plus"></i> Agregar embargo
+        </button>
+      </div>
+    </div>
+
+    <!-- ── TITULARES HISTÓRICOS ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-history"></i>
+        <p class="ci-section-title">Historial de Titulares (DNRPA)</p>
+      </div>
+      <div class="ci-section-body">
+        <div style="overflow-x:auto;">
+          <table class="ci-table">
+            <thead>
+              <tr>
+                <th style="width:60px;">Orden</th>
+                <th>Nombre</th>
+                <th>Desde</th>
+                <th>Hasta</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="titularesBody">
+              {% for item in datos.get('titulares', []) %}
+              <tr>
+                <td><input type="text" name="titular_orden[]" class="form-control hd-input" value="{{ item.orden }}"></td>
+                <td><input type="text" name="titular_hist_nombre[]" class="form-control hd-input" value="{{ item.nombre }}"></td>
+                <td><input type="date" name="titular_hist_desde[]" class="form-control hd-input" value="{{ item.desde }}"></td>
+                <td><input type="date" name="titular_hist_hasta[]" class="form-control hd-input" value="{{ item.hasta }}"></td>
+                <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="ci-add-btn" onclick="agregarFila('titularesBody', filaTitular)">
+          <i class="fas fa-plus"></i> Agregar titular
+        </button>
+      </div>
+    </div>
+
+    <!-- ── RECALLS ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-tools"></i>
+        <p class="ci-section-title">Recalls de Fábrica</p>
+      </div>
+      <div class="ci-section-body">
+        <div style="overflow-x:auto;">
+          <table class="ci-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Descripción</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="recallsBody">
+              {% for item in datos.get('recalls', []) %}
+              <tr>
+                <td><input type="date" name="recall_fecha[]" class="form-control hd-input" value="{{ item.fecha }}"></td>
+                <td><input type="text" name="recall_marca[]" class="form-control hd-input" value="{{ item.get('marca','') }}"></td>
+                <td><input type="text" name="recall_modelo[]" class="form-control hd-input" value="{{ item.get('modelo','') }}"></td>
+                <td><input type="text" name="recall_descripcion[]" class="form-control hd-input" value="{{ item.descripcion }}"></td>
+                <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="ci-add-btn" onclick="agregarFila('recallsBody', filaRecall)">
+          <i class="fas fa-plus"></i> Agregar recall
+        </button>
+      </div>
+    </div>
+
+    <!-- ── PRECIO DE REFERENCIA ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-chart-line"></i>
+        <p class="ci-section-title">Precio de Referencia de Mercado</p>
+      </div>
+      <div class="ci-section-body">
+        <div class="row g-3" id="preciosBody">
+          {% set precios = datos.get('precios', []) %}
+          {% for item in precios %}
+          <div class="col-md-4 precio-item">
+            <div style="background:var(--hd-card-2);border:1px solid var(--hd-border);border-radius:var(--radius-md);padding:16px;position:relative;">
+              <button type="button" class="ci-del-btn" onclick="this.closest('.precio-item').remove()"
+                style="position:absolute;top:10px;right:10px;padding:3px 7px;">
+                <i class="fas fa-times"></i>
+              </button>
+              <label class="ci-label">Año</label>
+              <input type="text" name="precio_anio[]" class="form-control hd-input mb-2" value="{{ item.anio }}">
+              <label class="ci-label">Importe</label>
+              <input type="text" name="precio_importe[]" class="form-control hd-input" value="{{ item.importe }}">
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" class="ci-add-btn mt-3" onclick="agregarPrecio()">
+          <i class="fas fa-plus"></i> Agregar año
+        </button>
+      </div>
+    </div>
+
+    <!-- ── OBSERVACIONES GENERALES ── -->
+    <div class="ci-section">
+      <div class="ci-section-header">
+        <i class="fas fa-sticky-note"></i>
+        <p class="ci-section-title">Observaciones Generales</p>
+      </div>
+      <div class="ci-section-body">
+        <textarea name="observaciones" class="form-control hd-input" rows="4"
+          placeholder="Notas adicionales para el informe...">{{ datos.get('observaciones','') }}</textarea>
+      </div>
+    </div>
+
+    <!-- ── BARRA DE ACCIONES ── -->
+    <div class="ci-sticky-bar">
+      <div class="container d-flex justify-content-between align-items-center">
+        <a href="{{ url_for('informes') }}" class="hd-btn-ghost" style="border-radius:999px;">
+          <i class="fas fa-arrow-left me-2"></i> Cancelar
+        </a>
+        <div style="display:flex;gap:10px;">
+          <button type="submit" name="accion" value="guardar" class="hd-btn-ghost" style="border-radius:999px;">
+            <i class="fas fa-save me-2"></i> Guardar borrador
+          </button>
+          <button type="submit" name="accion" value="generar"
+            class="hd-btn-primary" style="border-radius:999px;padding:13px 28px;"
+            onclick="return confirm('¿Generar y publicar el PDF para el cliente?')">
+            <i class="fas fa-file-pdf me-2"></i> Generar PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+{% block scripts %}
+<script>
+  /* ── Plantillas de filas ── */
+  const filaImpuesto = `
+    <tr>
+      <td><input type="text" name="impuesto_anio[]" class="form-control hd-input"></td>
+      <td><input type="text" name="impuesto_cuota[]" class="form-control hd-input"></td>
+      <td>
+        <select name="impuesto_estado[]" class="form-select hd-input">
+          <option value="Pago">Pago</option>
+          <option value="Impago">Impago</option>
+          <option value="En gestión">En gestión</option>
+        </select>
+      </td>
+      <td><input type="date" name="impuesto_vencimiento[]" class="form-control hd-input"></td>
+      <td><input type="text" name="impuesto_importe_original[]" class="form-control hd-input"></td>
+      <td><input type="text" name="impuesto_importe_actualizado[]" class="form-control hd-input"></td>
+      <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+    </tr>`;
+
+  const filaEmbargo = `
+    <tr>
+      <td><input type="text" name="embargo_tipo[]" class="form-control hd-input"></td>
+      <td><input type="text" name="embargo_organismo[]" class="form-control hd-input"></td>
+      <td><input type="text" name="embargo_monto[]" class="form-control hd-input"></td>
+      <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+    </tr>`;
+
+  const filaTitular = `
+    <tr>
+      <td><input type="text" name="titular_orden[]" class="form-control hd-input"></td>
+      <td><input type="text" name="titular_hist_nombre[]" class="form-control hd-input"></td>
+      <td><input type="date" name="titular_hist_desde[]" class="form-control hd-input"></td>
+      <td><input type="date" name="titular_hist_hasta[]" class="form-control hd-input"></td>
+      <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+    </tr>`;
+
+  const filaRecall = `
+    <tr>
+      <td><input type="date" name="recall_fecha[]" class="form-control hd-input"></td>
+      <td><input type="text" name="recall_marca[]" class="form-control hd-input"></td>
+      <td><input type="text" name="recall_modelo[]" class="form-control hd-input"></td>
+      <td><input type="text" name="recall_descripcion[]" class="form-control hd-input"></td>
+      <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove()"><i class="fas fa-times"></i></button></td>
+    </tr>`;
+
+  function agregarFila(tbodyId, template) {
+    document.getElementById(tbodyId).insertAdjacentHTML('beforeend', template);
+  }
+
+  function agregarFilaMulta() {
+    const fila = `
+      <tr>
+        <td><input type="date" name="multa_fecha[]" class="form-control hd-input"></td>
+        <td><input type="text" name="multa_acta[]" class="form-control hd-input"></td>
+        <td><input type="number" name="multa_importe[]" class="form-control hd-input multa-importe" step="0.01" oninput="calcularTotalMultas()"></td>
+        <td><button type="button" class="ci-del-btn" onclick="this.closest('tr').remove(); calcularTotalMultas()"><i class="fas fa-times"></i></button></td>
+      </tr>`;
+    document.getElementById('infraccionesBody').insertAdjacentHTML('beforeend', fila);
+  }
+
+  function agregarPrecio() {
+    const html = `
+      <div class="col-md-4 precio-item">
+        <div style="background:var(--hd-card-2);border:1px solid var(--hd-border);border-radius:var(--radius-md);padding:16px;position:relative;">
+          <button type="button" class="ci-del-btn" onclick="this.closest('.precio-item').remove()"
+            style="position:absolute;top:10px;right:10px;padding:3px 7px;">
+            <i class="fas fa-times"></i>
+          </button>
+          <label class="ci-label">Año</label>
+          <input type="text" name="precio_anio[]" class="form-control hd-input mb-2">
+          <label class="ci-label">Importe</label>
+          <input type="text" name="precio_importe[]" class="form-control hd-input">
+        </div>
+      </div>`;
+    document.getElementById('preciosBody').insertAdjacentHTML('beforeend', html);
+  }
+
+  function calcularTotalMultas() {
+    let total = 0;
+    document.querySelectorAll('.multa-importe').forEach(function(input) {
+      total += parseFloat(input.value) || 0;
+    });
+    document.getElementById('totalMultas').textContent = '$ ' + total.toLocaleString('es-AR', {minimumFractionDigits: 2});
+    document.getElementById('multasTotalInput').value = total.toFixed(2);
+  }
+
+  // Calcular total al cargar si hay datos previos
+  document.addEventListener('DOMContentLoaded', calcularTotalMultas);
+</script>
+{% endblock %}
+{% endblock %}

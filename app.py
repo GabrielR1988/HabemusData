@@ -179,65 +179,81 @@ def es_admin():
         return False
 
 def parsear_datos_formulario(form):
-    """Convierte el form con arrays (multas, embargos, etc.) en un dict limpio."""
     datos = {
         # Vehículo
-        'marca': form.get('marca', '').strip(),
-        'modelo': form.get('modelo', '').strip(),
-        'version': form.get('version', '').strip(),
-        'anio': form.get('anio', '').strip(),
-        'color': form.get('color', '').strip(),
-        'tipo': form.get('tipo', '').strip(),
-        'motor': form.get('motor', '').strip(),
-        'combustible': form.get('combustible', '').strip(),
-        'nro_motor': form.get('nro_motor', '').strip(),
+        'marca':      form.get('marca', '').strip(),
+        'modelo':     form.get('modelo', '').strip(),
+        'anio':       form.get('anio', '').strip(),
+        'nro_motor':  form.get('nro_motor', '').strip(),
         'nro_chasis': form.get('nro_chasis', '').strip(),
-        'radicacion': form.get('radicacion', '').strip(),
 
-        # Titular
-        'titular_nombre': form.get('titular_nombre', '').strip(),
-        'titular_cuit': form.get('titular_cuit', '').strip(),
-        'titular_tipo': form.get('titular_tipo', '').strip(),
-        'titular_domicilio': form.get('titular_domicilio', '').strip(),
-        'titular_provincia': form.get('titular_provincia', '').strip(),
+        # Registro de radicación
+        'radicado':               form.get('radicado', '').strip(),
+        'radicacion_direccion':   form.get('radicacion_direccion', '').strip(),
+        'radicacion_telefono':    form.get('radicacion_telefono', '').strip(),
+        'radicacion_registro':    form.get('radicacion_registro', '').strip(),
+        'radicacion_localidad':   form.get('radicacion_localidad', '').strip(),
 
         # Situación legal
-        'robado': form.get('robado', 'No'),
+        'robado':       form.get('robado', 'No'),
         'inhabilitado': form.get('inhabilitado', 'No'),
         'baja_dominio': form.get('baja_dominio', 'No'),
 
-        # Patente
-        'patente_estado': form.get('patente_estado', 'Sin datos'),
-        'patente_monto_total': form.get('patente_monto_total', '').strip(),
-        'patente_periodos': form.get('patente_periodos', '').strip(),
-        'patente_obs': form.get('patente_obs', '').strip(),
+        # VTV
+        'vtv_organismo': form.get('vtv_organismo', '').strip(),
+        'vtv_anio':      form.get('vtv_anio', '').strip(),
+        'vtv_centro':    form.get('vtv_centro', '').strip(),
+        'vtv_resultado': form.get('vtv_resultado', '').strip(),
+        'vtv_fecha':     form.get('vtv_fecha', '').strip(),
+        'vtv_falla':     form.get('vtv_falla', '').strip(),
 
-        # Precio
-        'precio_min': form.get('precio_min', '').strip(),
-        'precio_max': form.get('precio_max', '').strip(),
-        'precio_fuente': form.get('precio_fuente', '').strip(),
-        'precio_fecha': form.get('precio_fecha', '').strip(),
-        'precio_obs': form.get('precio_obs', '').strip(),
+        # GNC
+        'gnc_operacion':        form.get('gnc_operacion', '').strip(),
+        'gnc_fecha':            form.get('gnc_fecha', '').strip(),
+        'gnc_fecha_vencimiento':form.get('gnc_fecha_vencimiento', '').strip(),
+        'gnc_nro_oblea':        form.get('gnc_nro_oblea', '').strip(),
+        'gnc_lugar':            form.get('gnc_lugar', '').strip(),
 
-        # Observaciones
+        # Kilometraje
+        'km_fecha':  form.get('km_fecha', '').strip(),
+        'km_valor':  form.get('km_valor', '').strip(),
+
+        # Infracciones
+        'multas_descripcion': form.get('multas_descripcion', '').strip(),
+        'multas_total':       form.get('multas_total', '0').strip(),
+
+        # Observaciones generales
         'observaciones': form.get('observaciones', '').strip(),
     }
 
-    # Arrays: multas
-    multa_fechas = form.getlist('multa_fecha[]')
-    multa_descs = form.getlist('multa_descripcion[]')
-    multa_organismos = form.getlist('multa_organismo[]')
-    multa_montos = form.getlist('multa_monto[]')
+    # Arrays: impuesto automotor
+    imp_anios      = form.getlist('impuesto_anio[]')
+    imp_cuotas     = form.getlist('impuesto_cuota[]')
+    imp_estados    = form.getlist('impuesto_estado[]')
+    imp_venc       = form.getlist('impuesto_vencimiento[]')
+    imp_orig       = form.getlist('impuesto_importe_original[]')
+    imp_act        = form.getlist('impuesto_importe_actualizado[]')
+    datos['impuesto'] = [
+        {'anio': a, 'cuota': c, 'estado': e, 'vencimiento': v,
+         'importe_original': io, 'importe_actualizado': ia}
+        for a, c, e, v, io, ia in zip(imp_anios, imp_cuotas, imp_estados, imp_venc, imp_orig, imp_act)
+        if a.strip() or c.strip()
+    ]
+
+    # Arrays: multas / infracciones
+    multa_fechas  = form.getlist('multa_fecha[]')
+    multa_actas   = form.getlist('multa_acta[]')
+    multa_importes= form.getlist('multa_importe[]')
     datos['multas'] = [
-        {'fecha': f, 'descripcion': d, 'organismo': o, 'monto': m}
-        for f, d, o, m in zip(multa_fechas, multa_descs, multa_organismos, multa_montos)
-        if f.strip() or d.strip()  # descarta filas completamente vacías
+        {'fecha': f, 'acta': a, 'importe': i}
+        for f, a, i in zip(multa_fechas, multa_actas, multa_importes)
+        if f.strip() or a.strip()
     ]
 
     # Arrays: embargos
-    emb_tipos = form.getlist('embargo_tipo[]')
+    emb_tipos      = form.getlist('embargo_tipo[]')
     emb_organismos = form.getlist('embargo_organismo[]')
-    emb_montos = form.getlist('embargo_monto[]')
+    emb_montos     = form.getlist('embargo_monto[]')
     datos['embargos'] = [
         {'tipo': t, 'organismo': o, 'monto': m}
         for t, o, m in zip(emb_tipos, emb_organismos, emb_montos)
@@ -247,8 +263,8 @@ def parsear_datos_formulario(form):
     # Arrays: titulares históricos
     tit_ordenes = form.getlist('titular_orden[]')
     tit_nombres = form.getlist('titular_hist_nombre[]')
-    tit_desdes = form.getlist('titular_hist_desde[]')
-    tit_hastas = form.getlist('titular_hist_hasta[]')
+    tit_desdes  = form.getlist('titular_hist_desde[]')
+    tit_hastas  = form.getlist('titular_hist_hasta[]')
     datos['titulares'] = [
         {'orden': o, 'nombre': n, 'desde': d, 'hasta': h}
         for o, n, d, h in zip(tit_ordenes, tit_nombres, tit_desdes, tit_hastas)
@@ -256,13 +272,23 @@ def parsear_datos_formulario(form):
     ]
 
     # Arrays: recalls
-    rec_fechas = form.getlist('recall_fecha[]')
-    rec_descs = form.getlist('recall_descripcion[]')
-    rec_estados = form.getlist('recall_estado[]')
+    rec_fechas  = form.getlist('recall_fecha[]')
+    rec_marcas  = form.getlist('recall_marca[]')
+    rec_modelos = form.getlist('recall_modelo[]')
+    rec_descs   = form.getlist('recall_descripcion[]')
     datos['recalls'] = [
-        {'fecha': f, 'descripcion': d, 'estado': e}
-        for f, d, e in zip(rec_fechas, rec_descs, rec_estados)
+        {'fecha': f, 'marca': m, 'modelo': mo, 'descripcion': d}
+        for f, m, mo, d in zip(rec_fechas, rec_marcas, rec_modelos, rec_descs)
         if d.strip()
+    ]
+
+    # Arrays: precios de referencia
+    precio_anios   = form.getlist('precio_anio[]')
+    precio_importes= form.getlist('precio_importe[]')
+    datos['precios'] = [
+        {'anio': a, 'importe': i}
+        for a, i in zip(precio_anios, precio_importes)
+        if a.strip() or i.strip()
     ]
 
     return datos
@@ -364,20 +390,11 @@ def nuevo_pedido():
         db.session.add(nuevo)
         db.session.commit()
 
-        try:
-            msg = Message(
-                'Nuevo Pedido Creado',
-                sender='hg.rodriguez1988@gmail.com',
-                recipients=['hg.rodriguez1988@gmail.com']
-            )
-            msg.body = f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
-            disparar_email(
-                destinatario='hg.rodriguez1988@gmail.com',
-                asunto='Nuevo Pedido Creado',
-                cuerpo=f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
-            )
-        except Exception as e:
-            app.logger.warning(f'No se pudo enviar el mail de nuevo pedido: {e}')
+        disparar_email(
+            destinatario='hg.rodriguez1988@gmail.com',
+            asunto='Nuevo Pedido Creado',
+            cuerpo=f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
+        )
 
         flash('¡El pedido se creó con éxito!', 'success')
         return redirect(url_for('panel'))
