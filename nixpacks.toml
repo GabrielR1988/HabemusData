@@ -1,5 +1,7 @@
 [phases.setup]
 nixPkgs = [
+  "python3",
+  "gcc",
   "gobject-introspection",
   "cairo",
   "pango",
@@ -8,6 +10,7 @@ nixPkgs = [
   "zlib",
   "fontconfig",
   "freetype",
+  "glib",
 ]
 
 [start]
