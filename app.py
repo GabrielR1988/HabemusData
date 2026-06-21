@@ -24,10 +24,12 @@ import resend
 
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-resend.api_key = os.getenv("re_Rjvy4byE_JF367pd6StThajviJLu1LuFD")
+# Usamos la service_role key porque este es código de servidor confiable
+# y necesita bypassear RLS para subir/leer archivos del bucket de informes.
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 def admin_required(f):
     @wraps(f)
