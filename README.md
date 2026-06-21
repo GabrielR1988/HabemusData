@@ -24,3 +24,5 @@ git clone https://github.com/tu_usuario/proyecto.git
 cd proyecto
 pip install -r requirements.txt
 python app.py
+
+
