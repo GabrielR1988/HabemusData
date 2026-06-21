@@ -11,6 +11,10 @@ aptPkgs = [
   "fonts-liberation",
   "shared-mime-info"
 ]
+cmds = ["ldconfig"]
+
+[variables]
+LD_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu:/usr/lib"
 
 [start]
 cmd = "gunicorn app:app"
