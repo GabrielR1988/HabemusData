@@ -429,7 +429,7 @@ def nuevo_pedido():
         db.session.commit()
 
         # 2. Crear preferencia en MercadoPago
-        base_url = request.host_url.rstrip('/')
+        base_url = os.getenv("APP_URL", request.host_url.rstrip('/'))
         preference_data = {
             "items": [{
                 "title":     NOMBRES_PLAN[plan],
@@ -451,6 +451,10 @@ def nuevo_pedido():
             "notification_url": f"{base_url}/pago/webhook",
             "statement_descriptor": "HABEMUSDATA",
         }
+        app.logger.info(f'[MP] base_url: {base_url}')
+        app.logger.info(f'[MP] preference_data: {preference_data}')
+        result = mp_sdk.preference().create(preference_data)
+        app.logger.info(f'[MP] Respuesta completa: {result}')
 
         try:
             result = mp_sdk.preference().create(preference_data)
