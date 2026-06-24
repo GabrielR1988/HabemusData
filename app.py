@@ -461,8 +461,8 @@ def nuevo_pedido():
             db.session.commit()
 
             # 3. Redirigir al checkout de MercadoPago
-            init_point = preference["init_point"]          # producción
-            # init_point = preference["sandbox_init_point"] # descomentar para pruebas
+            # init_point = preference["init_point"]          # producción
+            init_point = preference["sandbox_init_point"] # descomentar para pruebas
             return redirect(init_point)
 
         except Exception as e:
