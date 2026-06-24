@@ -1,10 +1,53 @@
 {% extends 'base.html' %}
 {% block title %}Nuevo Pedido - HabemusData{% endblock %}
 
+{% block head %}
+<style>
+  .plan-option {
+    position: relative;
+    cursor: pointer;
+    border: 2px solid var(--hd-border);
+    border-radius: var(--radius-md);
+    padding: 16px 14px 14px;
+    transition: border-color .2s, background .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+  .plan-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .plan-option:has(input:checked) { background: rgba(26,111,255,.07); }
+  .plan-option.bronce:has(input:checked) { border-color: var(--hd-bronze); }
+  .plan-option.plata:has(input:checked)  { border-color: var(--hd-silver); }
+  .plan-option.oro:has(input:checked)    { border-color: var(--hd-gold); }
+  .plan-badge {
+    position: absolute;
+    top: -10px; left: 50%; transform: translateX(-50%);
+    font-size: .62rem; font-weight: 800; letter-spacing: .08em;
+    text-transform: uppercase; padding: 2px 10px; border-radius: 999px;
+    white-space: nowrap;
+  }
+  .plan-name { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: .04em; margin-top: 4px; }
+  .plan-price { font-weight: 700; font-size: 1.1rem; color: var(--hd-white); }
+  .plan-price small { font-size: .72rem; color: var(--hd-muted); font-weight: 400; }
+  .plan-check {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--hd-border);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: .65rem; color: transparent; margin-top: 4px;
+    transition: all .2s;
+  }
+  .plan-option.bronce:has(input:checked) .plan-check { background: var(--hd-bronze); border-color: var(--hd-bronze); color: #fff; }
+  .plan-option.plata:has(input:checked)  .plan-check { background: var(--hd-silver); border-color: var(--hd-silver); color: #fff; }
+  .plan-option.oro:has(input:checked)    .plan-check { background: var(--hd-gold);   border-color: var(--hd-gold);   color: #0a1018; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="min-vh-fill py-5">
+<div class="py-5">
   <div class="row justify-content-center w-100">
-    <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
 
       <div class="text-center mb-4">
         <div style="
@@ -14,21 +57,15 @@
           display:inline-flex;align-items:center;justify-content:center;
           font-size:1.4rem;color:var(--hd-blue-lt);
           margin-bottom:16px;
-        ">
-          <i class="fas fa-search"></i>
-        </div>
+        "><i class="fas fa-search"></i></div>
         <p class="hd-footer-col-title mb-1">Consulta vehicular</p>
         <h1 style="font-family:var(--font-display);font-size:2.2rem;color:var(--hd-white);letter-spacing:.03em;margin:0;">
-          INGRESÁ LA PATENTE
+          NUEVO INFORME
         </h1>
       </div>
 
       <div class="hd-card">
         <div class="hd-card-body">
-
-          <p style="color:var(--hd-muted);font-size:.88rem;text-align:center;margin-bottom:24px;line-height:1.6;">
-            Ingresá el dominio del vehículo para solicitar el informe de historial, multas y deudas.
-          </p>
 
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -41,9 +78,13 @@
             {% endif %}
           {% endwith %}
 
-          <form method="POST" action="{{ url_for('nuevo_pedido') }}">
+          <form method="POST" action="{{ url_for('nuevo_pedido') }}" id="formPedido">
 
-            <div class="mb-2">
+            <!-- ── DOMINIO ── -->
+            <div class="mb-1">
+              <label style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hd-muted);display:block;margin-bottom:8px;">
+                Patente del vehículo
+              </label>
               <input
                 type="text"
                 class="form-control hd-input"
@@ -53,6 +94,8 @@
                 maxlength="9"
                 required
                 autofocus
+                autocomplete="off"
+                value="{{ dominio_prefill or '' }}"
                 style="
                   text-align:center;
                   text-transform:uppercase;
@@ -64,28 +107,69 @@
                 "
               >
             </div>
-
-            <!-- Formatos aceptados -->
             <div style="display:flex;justify-content:center;gap:8px;margin-bottom:28px;flex-wrap:wrap;">
-              <span style="font-size:.75rem;color:var(--hd-muted);margin-right:4px;align-self:center;">Formatos:</span>
-              <span style="
-                font-family:monospace;font-size:.8rem;
-                background:rgba(255,255,255,.04);
-                border:1px solid var(--hd-border);
-                border-radius:5px;padding:3px 10px;
-                color:var(--hd-text);
-              ">AAA123</span>
-              <span style="
-                font-family:monospace;font-size:.8rem;
-                background:rgba(255,255,255,.04);
-                border:1px solid var(--hd-border);
-                border-radius:5px;padding:3px 10px;
-                color:var(--hd-text);
-              ">AA123BB</span>
+              <span style="font-size:.75rem;color:var(--hd-muted);align-self:center;">Formatos:</span>
+              <span style="font-family:monospace;font-size:.8rem;background:rgba(255,255,255,.04);border:1px solid var(--hd-border);border-radius:5px;padding:3px 10px;color:var(--hd-text);">AAA123</span>
+              <span style="font-family:monospace;font-size:.8rem;background:rgba(255,255,255,.04);border:1px solid var(--hd-border);border-radius:5px;padding:3px 10px;color:var(--hd-text);">AA123BB</span>
+            </div>
+
+            <!-- ── SELECTOR DE PLAN ── -->
+            <div style="margin-bottom:28px;">
+              <label style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--hd-muted);display:block;margin-bottom:14px;">
+                Seleccioná tu plan
+              </label>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+
+                <!-- Bronce -->
+                <label class="plan-option bronce">
+                  <input type="radio" name="plan" value="bronce" {% if plan_prefill == 'bronce' %}checked{% endif %}>
+                  <span class="plan-name" style="color:var(--hd-bronze);">Bronce</span>
+                  <span class="plan-price">$3.500 <small>ARS</small></span>
+                  <span style="font-size:.7rem;color:var(--hd-muted);">Básico</span>
+                  <span class="plan-check"><i class="fas fa-check"></i></span>
+                </label>
+
+                <!-- Plata -->
+                <label class="plan-option plata" style="position:relative;">
+                  <input type="radio" name="plan" value="plata" {% if not plan_prefill or plan_prefill == 'plata' %}checked{% endif %}>
+                  <span class="plan-badge" style="background:var(--hd-silver);color:#0a1018;">Popular</span>
+                  <span class="plan-name" style="color:var(--hd-silver);">Plata</span>
+                  <span class="plan-price">$14.500 <small>ARS</small></span>
+                  <span style="font-size:.7rem;color:var(--hd-muted);">Completo</span>
+                  <span class="plan-check"><i class="fas fa-check"></i></span>
+                </label>
+
+                <!-- Oro -->
+                <label class="plan-option oro">
+                  <input type="radio" name="plan" value="oro" {% if plan_prefill == 'oro' %}checked{% endif %}>
+                  <span class="plan-name" style="color:var(--hd-gold);">Oro</span>
+                  <span class="plan-price">$24.000 <small>ARS</small></span>
+                  <span style="font-size:.7rem;color:var(--hd-muted);">Premium</span>
+                  <span class="plan-check"><i class="fas fa-check"></i></span>
+                </label>
+
+              </div>
+            </div>
+
+            <!-- ── RESUMEN DE PRECIO ── -->
+            <div id="resumenPrecio" style="
+              background:var(--hd-card-2);
+              border:1px solid var(--hd-border);
+              border-radius:var(--radius-md);
+              padding:14px 18px;
+              display:flex;
+              justify-content:space-between;
+              align-items:center;
+              margin-bottom:20px;
+            ">
+              <span style="font-size:.82rem;color:var(--hd-muted);">Total a pagar</span>
+              <span id="precioTotal" style="font-family:var(--font-display);font-size:1.6rem;color:var(--hd-white);letter-spacing:.03em;">
+                $14.500 ARS
+              </span>
             </div>
 
             <button type="submit" class="hd-btn-primary w-100 text-center" style="border-radius:999px;padding:14px;font-size:1rem;">
-              <i class="fas fa-paper-plane me-2"></i> Solicitar Informe
+              <i class="fas fa-lock me-2"></i> Ir al pago
             </button>
 
             <a href="{{ url_for('panel') }}" class="hd-btn-ghost w-100 text-center mt-2" style="border-radius:999px;padding:13px;">
@@ -102,9 +186,24 @@
 
 {% block scripts %}
 <script>
-  /* Forzar mayúsculas en tiempo real */
+  var precios = { bronce: '$3.500 ARS', plata: '$14.500 ARS', oro: '$24.000 ARS' };
+
+  // Sin espacios + mayúsculas
   var d = document.getElementById('dominio');
-  if (d) d.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+  if (d) d.addEventListener('input', function() {
+    this.value = this.value.toUpperCase().replace(/\s/g, '');
+  });
+
+  // Actualizar resumen de precio al cambiar plan
+  document.querySelectorAll('input[name="plan"]').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      document.getElementById('precioTotal').textContent = precios[this.value] || '';
+    });
+  });
+
+  // Inicializar con el plan seleccionado por defecto
+  var planActivo = document.querySelector('input[name="plan"]:checked');
+  if (planActivo) document.getElementById('precioTotal').textContent = precios[planActivo.value];
 </script>
 {% endblock %}
 {% endblock %}

@@ -79,6 +79,14 @@
                     <span class="hd-badge hd-badge-primary">
                       <i class="fas fa-spinner"></i> En proceso
                     </span>
+                  {% elif pedido.estado in ('Pendiente de pago', 'Pago pendiente') %}
+                    <span class="hd-badge" style="background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);">
+                      <i class="fas fa-credit-card"></i> Pago pendiente
+                    </span>
+                  {% elif pedido.estado == 'Pago fallido' %}
+                    <span class="hd-badge" style="background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);">
+                      <i class="fas fa-times-circle"></i> Pago fallido
+                    </span>
                   {% else %}
                     <span class="hd-badge hd-badge-warning">
                       <i class="fas fa-clock"></i> En espera

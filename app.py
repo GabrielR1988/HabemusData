@@ -20,6 +20,7 @@ from io import BytesIO
 from datetime import datetime
 from functools import wraps
 import resend
+import mercadopago
 
 
 load_dotenv()
@@ -30,6 +31,20 @@ BUCKET_NAME = os.getenv("BUCKET_NAME")
 # y necesita bypassear RLS para subir/leer archivos del bucket de informes.
 supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 resend.api_key = os.getenv("RESEND_API_KEY")
+
+# ── MercadoPago ──────────────────────────────────────────────────────────────
+mp_sdk = mercadopago.SDK(os.getenv("MP_ACCESS_TOKEN"))
+
+PRECIOS_PLAN = {
+    'bronce': 3500.0,
+    'plata':  14500.0,
+    'oro':    24000.0,
+}
+NOMBRES_PLAN = {
+    'bronce': 'Informe Bronce - HabemusData',
+    'plata':  'Informe Plata - HabemusData',
+    'oro':    'Informe Oro - HabemusData',
+}
 
 def admin_required(f):
     @wraps(f)
@@ -129,8 +144,9 @@ class Pedido(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     dominio = db.Column(db.String(20))
     url_pdf = db.Column(db.String, nullable=True)
-    plan = db.Column(db.String(20), default='oro')   # 'bronce', 'plata', 'oro'
-    datos_json = db.Column(db.Text, nullable=True)         # JSON con todos los datos del informe
+    plan = db.Column(db.String(20), default='plata')  # 'bronce', 'plata', 'oro'
+    datos_json = db.Column(db.Text, nullable=True)    # JSON con todos los datos del informe
+    mp_preference_id = db.Column(db.String(200), nullable=True)  # ID de preferencia MP
 
     def __repr__(self):
         return f'<Pedido {self.id} - {self.cliente_nombre}>'
@@ -382,31 +398,82 @@ def panel():
 @app.route('/nuevo_pedido', methods=['GET', 'POST'])
 @login_required
 def nuevo_pedido():
+    # Si viene la patente desde la landing, la pre-llenamos
+    dominio_prefill = request.args.get('dominio', '').upper().strip()
+    plan_prefill    = request.args.get('plan', 'plata').lower()
+
     if request.method == 'POST':
-        dominio = request.form['dominio'].upper().strip()
+        dominio = request.form.get('dominio', '').upper().strip().replace(' ', '')
+        plan    = request.form.get('plan', 'plata').lower()
+
+        if not dominio:
+            flash('Ingresá una patente válida.', 'danger')
+            return render_template('nuevo_pedido.html', dominio_prefill=dominio, plan_prefill=plan)
+
+        if plan not in PRECIOS_PLAN:
+            plan = 'plata'
+
         usuario = Usuario.query.get(current_user.id)
 
+        # 1. Crear pedido en estado "Pendiente de pago" antes de redirigir a MP.
+        #    Así tenemos el ID para usarlo como external_reference.
         nuevo = Pedido(
             dominio=dominio,
             fecha_pedido=datetime.now(),
-            estado='En espera',
+            estado='Pendiente de pago',
             usuario_id=current_user.id,
-            cliente_nombre=usuario.nombre
+            cliente_nombre=usuario.nombre,
+            plan=plan,
         )
-
         db.session.add(nuevo)
         db.session.commit()
 
-        disparar_email(
-            destinatario='hg.rodriguez1988@gmail.com',
-            asunto='Nuevo Pedido Creado',
-            cuerpo=f'Se ha creado un nuevo pedido con el dominio: {dominio}.\nID del pedido: {nuevo.id}.'
-        )
+        # 2. Crear preferencia en MercadoPago
+        base_url = request.host_url.rstrip('/')
+        preference_data = {
+            "items": [{
+                "title":     NOMBRES_PLAN[plan],
+                "quantity":  1,
+                "unit_price": PRECIOS_PLAN[plan],
+                "currency_id": "ARS",
+            }],
+            "payer": {
+                "name":  usuario.nombre,
+                "email": usuario.email,
+            },
+            "external_reference": str(nuevo.id),   # lo usamos para identificar el pedido en el webhook
+            "back_urls": {
+                "success": f"{base_url}/pago/exito",
+                "pending": f"{base_url}/pago/pendiente",
+                "failure": f"{base_url}/pago/fallo",
+            },
+            "auto_return": "approved",              # MP redirige solo si fue aprobado
+            "notification_url": f"{base_url}/pago/webhook",
+            "statement_descriptor": "HABEMUSDATA",
+        }
 
-        flash('¡El pedido se creó con éxito!', 'success')
-        return redirect(url_for('panel'))
+        try:
+            result = mp_sdk.preference().create(preference_data)
+            preference = result["response"]
 
-    return render_template('nuevo_pedido.html')  # ← fuera del if, al nivel de la función
+            # Guardar preference_id para referencia futura
+            nuevo.mp_preference_id = preference["id"]
+            db.session.commit()
+
+            # 3. Redirigir al checkout de MercadoPago
+            init_point = preference["init_point"]          # producción
+            # init_point = preference["sandbox_init_point"] # descomentar para pruebas
+            return redirect(init_point)
+
+        except Exception as e:
+            app.logger.error(f'Error creando preferencia MP para pedido {nuevo.id}: {e}')
+            # Si MP falla, borramos el pedido fantasma y mostramos error
+            db.session.delete(nuevo)
+            db.session.commit()
+            flash('No se pudo conectar con el sistema de pagos. Intentá de nuevo en unos minutos.', 'danger')
+            return render_template('nuevo_pedido.html', dominio_prefill=dominio, plan_prefill=plan)
+
+    return render_template('nuevo_pedido.html', dominio_prefill=dominio_prefill, plan_prefill=plan_prefill)
 
 
 @app.route('/registro', methods=['GET', 'POST'])
@@ -514,6 +581,118 @@ def terminar(pedido_id):
     db.session.commit()
     flash('Pedido terminado.', 'success')
     return redirect('/panel/informes')
+
+# ── RUTAS DE RETORNO DE MERCADOPAGO ─────────────────────────────────────────
+
+@app.route('/pago/exito')
+@login_required
+def pago_exito():
+    """MP redirige aquí cuando el pago fue APROBADO (auto_return=approved)."""
+    pedido_id         = request.args.get('external_reference')
+    payment_id        = request.args.get('payment_id')
+    merchant_order_id = request.args.get('merchant_order_id')
+
+    pedido = None
+    if pedido_id:
+        pedido = Pedido.query.filter_by(id=int(pedido_id), usuario_id=int(current_user.id)).first()
+
+    if pedido and pedido.estado == 'Pendiente de pago':
+        pedido.estado = 'En espera'
+        db.session.commit()
+
+        # Notificar al admin
+        disparar_email(
+            destinatario='hg.rodriguez1988@gmail.com',
+            asunto=f'[HabemusData] Nuevo pago recibido – Pedido #{pedido.id}',
+            cuerpo=(
+                f'Se acreditó el pago del pedido #{pedido.id}.\n'
+                f'Dominio: {pedido.dominio}\n'
+                f'Plan: {pedido.plan}\n'
+                f'Cliente: {pedido.cliente_nombre}\n'
+                f'Payment ID: {payment_id}\n'
+            )
+        )
+
+        flash('¡Pago acreditado! Estamos procesando tu informe. Te avisaremos por email cuando esté listo.', 'success')
+    elif pedido and pedido.estado != 'Pendiente de pago':
+        # Ya fue procesado por el webhook, solo mostramos confirmación
+        flash('Tu pedido ya fue registrado correctamente.', 'success')
+    else:
+        flash('Pago recibido. Si no ves tu pedido en unos minutos, contactanos.', 'info')
+
+    return redirect(url_for('panel'))
+
+
+@app.route('/pago/pendiente')
+@login_required
+def pago_pendiente():
+    """MP redirige aquí cuando el pago quedó PENDIENTE (ej: transferencia, efectivo)."""
+    pedido_id = request.args.get('external_reference')
+    if pedido_id:
+        pedido = Pedido.query.filter_by(id=int(pedido_id), usuario_id=int(current_user.id)).first()
+        if pedido and pedido.estado == 'Pendiente de pago':
+            pedido.estado = 'Pago pendiente'
+            db.session.commit()
+
+    flash('Tu pago está siendo procesado. En cuanto se acredite, comenzamos con tu informe.', 'warning')
+    return redirect(url_for('panel'))
+
+
+@app.route('/pago/fallo')
+@login_required
+def pago_fallo():
+    """MP redirige aquí cuando el pago FALLÓ o fue rechazado."""
+    pedido_id = request.args.get('external_reference')
+    dominio   = ''
+    plan      = 'plata'
+
+    if pedido_id:
+        pedido = Pedido.query.filter_by(id=int(pedido_id), usuario_id=int(current_user.id)).first()
+        if pedido and pedido.estado == 'Pendiente de pago':
+            dominio = pedido.dominio
+            plan    = pedido.plan
+            # Eliminamos el pedido fallido para que pueda reintentarlo limpio
+            db.session.delete(pedido)
+            db.session.commit()
+
+    flash('El pago no pudo procesarse. Podés intentarlo nuevamente.', 'danger')
+    return render_template('nuevo_pedido.html', dominio_prefill=dominio, plan_prefill=plan)
+
+
+@app.route('/pago/webhook', methods=['POST'])
+def pago_webhook():
+    """Webhook IPN de MercadoPago — confirmación server-to-server.
+    Se ejecuta independientemente de las back_urls, es la fuente más confiable."""
+    try:
+        data = request.get_json(silent=True) or {}
+        topic   = data.get('type') or request.args.get('topic', '')
+        mp_id   = data.get('data', {}).get('id') or request.args.get('id', '')
+
+        if topic == 'payment' and mp_id:
+            payment_info = mp_sdk.payment().get(mp_id)
+            payment      = payment_info.get('response', {})
+            status       = payment.get('status')
+            pedido_id    = payment.get('external_reference')
+
+            app.logger.info(f'[MP Webhook] payment_id={mp_id} status={status} pedido={pedido_id}')
+
+            if pedido_id:
+                pedido = Pedido.query.get(int(pedido_id))
+                if pedido:
+                    if status == 'approved' and pedido.estado in ('Pendiente de pago', 'Pago pendiente'):
+                        pedido.estado = 'En espera'
+                        db.session.commit()
+                        app.logger.info(f'[MP Webhook] Pedido {pedido.id} → En espera')
+                    elif status in ('rejected', 'cancelled') and pedido.estado == 'Pendiente de pago':
+                        pedido.estado = 'Pago fallido'
+                        db.session.commit()
+
+    except Exception as e:
+        app.logger.error(f'[MP Webhook] Error procesando notificación: {e}')
+
+    # MP espera siempre un 200; si devolvemos otra cosa reintenta
+    return '', 200
+
 
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
