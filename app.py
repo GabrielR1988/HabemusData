@@ -454,6 +454,7 @@ def nuevo_pedido():
 
         try:
             result = mp_sdk.preference().create(preference_data)
+            app.logger.info(f'[MP] Respuesta completa: {result}')  # ← agregá esta línea
             preference = result["response"]
 
             # Guardar preference_id para referencia futura
