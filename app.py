@@ -494,8 +494,8 @@ def nuevo_pedido():
             db.session.commit()
 
             # Usar sandbox_init_point para pruebas, init_point para producción
-            init_point = preference["sandbox_init_point"]
-            # init_point = preference["init_point"]
+            # init_point = preference["sandbox_init_point"]
+            init_point = preference["init_point"]
             return redirect(init_point)
 
         except Exception as e:
