@@ -94,26 +94,31 @@
                   {% endif %}
                 </td>
 
-                <td style="text-align:right;">
-                  {% if pedido.url_pdf %}
-                    <div style="display:inline-flex;gap:6px;">
-                      <a href="{{ pedido.url_pdf }}" target="_blank"
-                         class="hd-btn-ghost"
-                         style="padding:7px 14px;font-size:.82rem;"
-                         title="Ver online">
-                        <i class="fas fa-eye me-1"></i> Ver
-                      </a>
-                      <a href="{{ url_for('descargar_informe', id=pedido.id) }}"
+                  <td style="text-align:right;">
+                    {% if pedido.url_pdf %}
+                      <div style="display:inline-flex;gap:6px;">
+                        <a href="{{ pedido.url_pdf }}" target="_blank"
+                           class="hd-btn-ghost"
+                           style="padding:7px 14px;font-size:.82rem;">
+                          <i class="fas fa-eye me-1"></i> Ver
+                        </a>
+                        <a href="{{ url_for('descargar_informe', id=pedido.id) }}"
+                           class="hd-btn-primary"
+                           style="padding:7px 14px;font-size:.82rem;">
+                          <i class="fas fa-download me-1"></i> PDF
+                        </a>
+                      </div>
+                    {% elif pedido.estado in ('Pendiente de pago', 'Pago pendiente', 'Pago fallido') %}
+                      <a href="{{ url_for('reintentar_pago', id=pedido.id) }}"
                          class="hd-btn-primary"
-                         style="padding:7px 14px;font-size:.82rem;"
-                         title="Descargar PDF">
-                        <i class="fas fa-download me-1"></i> PDF
+                         style="padding:7px 16px;font-size:.82rem;border-radius:var(--radius-sm);
+                                background:var(--hd-gold);border:none;color:#0a1018;">
+                        <i class="fas fa-credit-card me-1"></i> Pagar
                       </a>
-                    </div>
-                  {% else %}
-                    <span style="font-size:.8rem;color:var(--hd-muted);font-style:italic;">Procesando...</span>
-                  {% endif %}
-                </td>
+                    {% else %}
+                      <span style="font-size:.8rem;color:var(--hd-muted);font-style:italic;">Procesando...</span>
+                    {% endif %}
+                  </td>
               </tr>
               {% endfor %}
             </tbody>

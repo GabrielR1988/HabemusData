@@ -507,6 +507,54 @@ def nuevo_pedido():
 
     return render_template('nuevo_pedido.html', dominio_prefill=dominio_prefill, plan_prefill=plan_prefill)
 
+@app.route('/pedido/<int:id>/pagar')
+@login_required
+def reintentar_pago(id):
+    pedido = Pedido.query.get_or_404(id)
+    if pedido.usuario_id != int(current_user.id):
+        flash('Acceso denegado.', 'danger')
+        return redirect(url_for('panel'))
+
+    if pedido.estado not in ('Pendiente de pago', 'Pago pendiente', 'Pago fallido'):
+        flash('Este pedido no requiere pago.', 'warning')
+        return redirect(url_for('panel'))
+
+    usuario = Usuario.query.get(current_user.id)
+    base_url = os.getenv("APP_URL", request.host_url.rstrip('/'))
+
+    preference_data = {
+        "items": [{
+            "title":       NOMBRES_PLAN[pedido.plan],
+            "quantity":    1,
+            "unit_price":  PRECIOS_PLAN[pedido.plan],
+            "currency_id": "ARS",
+        }],
+        "payer": {
+            "name":  usuario.nombre,
+            "email": usuario.email,
+        },
+        "external_reference": str(pedido.id),
+        "back_urls": {
+            "success": f"{base_url}/pago/exito",
+            "pending": f"{base_url}/pago/pendiente",
+            "failure": f"{base_url}/pago/fallo",
+        },
+        "auto_return": "approved",
+        "notification_url": f"{base_url}/pago/webhook",
+        "statement_descriptor": "HABEMUSDATA",
+    }
+
+    try:
+        result = mp_sdk.preference().create(preference_data)
+        preference = result["response"]
+        pedido.mp_preference_id = preference["id"]
+        pedido.estado = 'Pendiente de pago'
+        db.session.commit()
+        return redirect(preference["init_point"])
+    except Exception as e:
+        app.logger.error(f'Error creando preferencia MP para pedido {pedido.id}: {e}')
+        flash('No se pudo conectar con el sistema de pagos. Intentá de nuevo.', 'danger')
+        return redirect(url_for('panel'))
 
 # ── RUTAS DE RETORNO DE MERCADOPAGO ──────────────────────────────────────────
 
